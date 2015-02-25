@@ -1,0 +1,10 @@
+{
+    "navigator": {
+        "source": "containership.plugin.navigator",
+        "description": "A web-ui for managing your ContainerShip cluster"
+    },
+    "service-discovery": {
+        "source": "containership.plugin.service-discovery",
+        "description": "A service discovery plugin for ContainerShip"
+    }
+}

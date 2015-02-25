@@ -1,0 +1,34 @@
+{
+  "name": "containership.cli",
+  "version": "0.1.0",
+  "description": "Command line interface for Containership",
+  "main": "application.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/growbrosops/containership.cli.git"
+  },
+  "author": "ContainerShip Developers <developers@containership.io>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/growbrosops/containership.cli/issues"
+  },
+  "homepage": "https://github.com/growbrosops/containership.cli",
+  "dependencies": {
+    "async": "^0.9.0",
+    "colors": "^0.6.2",
+    "flat": "^1.5.0",
+    "lodash": "^3.2.0",
+    "npm": "^2.2.0",
+    "request": "^2.34.0",
+    "sprintf-js": "0.0.7"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "containership",
+    "cli",
+    "containership.cli"
+  ]
+}
