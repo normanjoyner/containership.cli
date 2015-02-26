@@ -42,8 +42,9 @@ module.exports = {
             help: "image application will run"
         },
 
-        env_vars: {
-            help: "environment variables for application"
+        "env-var": {
+            list: true,
+            help: "environment variable for application"
         },
 
         network_mode: {
@@ -120,6 +121,11 @@ module.exports = {
             delete config.tag;
         }
 
+        if(_.has(config, "env-var")){
+            config.env_vars = utils.parse_tags(config["env-var"]);
+            delete config["env-var"];
+        }
+
         request.post(["applications", options.application].join("/"), {}, config, function(err, response){
             if(err){
                 process.stderr.write(["Could not create application ", options.application, "!"].join(""));
@@ -139,6 +145,11 @@ module.exports = {
         if(_.has(config, "tag")){
             config.tags = utils.parse_tags(config.tag);
             delete config.tag;
+        }
+
+        if(_.has(config, "env-var")){
+            config.env_vars = utils.parse_tags(config["env-var"]);
+            delete config["env-var"];
         }
 
         request.put(["applications", options.application].join("/"), {}, config, function(err, response){
