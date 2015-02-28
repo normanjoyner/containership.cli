@@ -13,7 +13,6 @@ module.exports = {
             }
             else{
                 child_process.exec(["kill", "-1", pid.toString()].join(" "), function(err, stdout, stderr){
-                    console.log(err);
                     if(err){
                         process.stderr.write("Error reloading the ContainerShip agent!");
                         process.exit(1);
