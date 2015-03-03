@@ -6,5 +6,9 @@
     "service-discovery": {
         "source": "containership.plugin.service-discovery",
         "description": "A service discovery plugin for ContainerShip"
+    },
+    "cloud-hints": {
+        "source": "containership.plugin.cloud-hints",
+        "description": "A ContainerShip plugin used to automatically set cloud metadata in the form of host tags"
     }
 }
