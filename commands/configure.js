@@ -30,6 +30,10 @@ module.exports = {
             help: "version of the Containership API"
         },
 
+        "plugin-location": {
+            help: "location of CLI plugins"
+        },
+
         "strict-ssl": {
             flag: true,
             help: "enforce strict ssl checking"
