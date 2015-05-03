@@ -3,6 +3,7 @@ var child_process = require("child_process");
 var _ = require("lodash");
 var npm = require("npm");
 var request = require("request");
+var flat = require("flat");
 
 module.exports = {
 
@@ -56,6 +57,23 @@ module.exports = {
                     process.stderr.write("plugin name required!");
                     process.exit(1);
                 }
+                else if(options.subcommand == "configure"){
+                    var name = options.plugin;
+
+                    if(name.indexOf("containership.plugin.") == 0)
+                        name = name.substring(21, name.length);
+
+                    var config = _.omit(options, ["_", "0", "plugin", "subcommand"]);
+
+                    fs.writeFile([process.env["HOME"], ".containership", [name, "json"].join(".")].join("/"), JSON.stringify(flat.unflatten(config), null, 2), function(err){
+                        if(err){
+                            process.stderr.write(err.message);
+                            process.exit(1);
+                        }
+                        else
+                            console.log(["Wrote", name, "configuration file!"].join(" "));
+                    });
+                }
                 else if(options.subcommand == "add"){
                     if(_.has(authorized_plugins, options.plugin))
                         options.plugin = authorized_plugins[options.plugin].source;
@@ -89,10 +107,10 @@ module.exports = {
 
     options: {
         subcommand: {
-            help: "Plugin subcommand [add, remove, update, list, search]",
+            help: "Plugin subcommand [add, remove, update, list, search, configure]",
             position: 1,
             required: true,
-            choices: ["add", "remove", "update", "list", "search"]
+            choices: ["add", "remove", "update", "list", "search", "configure"]
         },
         plugin: {
             help: "Name of the plugin to install. Can be authorized plugin, github repository or npm package",

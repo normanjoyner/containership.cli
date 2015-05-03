@@ -14,7 +14,7 @@
     },
     "flat": {
       "version": "1.5.0",
-      "from": "flat@",
+      "from": "https://registry.npmjs.org/flat/-/flat-1.5.0.tgz",
       "resolved": "https://registry.npmjs.org/flat/-/flat-1.5.0.tgz"
     },
     "lodash": {
