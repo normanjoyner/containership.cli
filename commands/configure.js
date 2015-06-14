@@ -37,11 +37,6 @@ module.exports = {
         "strict-ssl": {
             flag: true,
             help: "enforce strict ssl checking"
-        },
-
-        "no-strict-ssl": {
-            flag: true,
-            help: "enforce strict ssl checking"
         }
     }
 
