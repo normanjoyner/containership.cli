@@ -21,7 +21,10 @@ module.exports = {
             }
             catch(e){}
 
-            npm.load({prefix: plugins_dir}, function(){
+            npm.load({
+                prefix: plugins_dir,
+                "unsafe-perm": true
+            }, function(){
                 if(options.subcommand == "list"){
                     npm.commands.ls([], {json: true}, function(err, data){
                         try{
