@@ -1,5 +1,5 @@
-var _ = require("lodash");
 var fs = require("fs");
+var _ = require("lodash");
 var config = require([__dirname, "lib", "config"].join("/"));
 
 // define ContainershipCLI
@@ -17,11 +17,17 @@ function ContainershipCLI(options){
     this.commands = {};
     this.configure_options = {};
 
-    var available_commands = fs.readdirSync([__dirname, "commands"].join("/"));
-    _.each(available_commands, function(command){
-        var command_name = command.split(".")[0];
-        this.commands[command_name] = require([__dirname, "commands", command].join("/"));
-        _.defaults(this.configure_options, this.commands[command_name].configure_options || {});
+    var commands = require([__dirname, "commands"].join("/"));
+
+    _.each(commands, function(command, command_name){
+        _.defaults(this.configure_options, command.configure_options || {});
+        if(_.has(command, "nomnom")){
+            this.commands[command_name] = {
+                nomnom: command.nomnom()
+            }
+        }
+        else
+            this.commands[command_name] = command;
     }, this);
 
     var plugins = require([__dirname, "lib", "plugins"].join("/"));
@@ -36,6 +42,13 @@ function ContainershipCLI(options){
     }, this);
 
     this.commands.configure.options = _.defaults(this.commands.configure.options, this.configure_options);
+}
+
+ContainershipCLI.prototype.set_middleware = function(middleware){
+    if(_.isUndefined(config.config.middleware))
+        config.config.middleware = middleware;
+    else
+        config.config.middleware = _.flatten([config.config.middleware, middleware]);
 }
 
 module.exports = ContainershipCLI;

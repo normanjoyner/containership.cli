@@ -21,6 +21,7 @@
     "colors": "^0.6.2",
     "flat": "https://registry.npmjs.org/flat/-/flat-1.5.0.tgz",
     "lodash": "^3.2.0",
+    "nomnom": "^1.8.1",
     "npm": "^2.2.0",
     "request": "https://registry.npmjs.org/request/-/request-2.51.0.tgz",
     "sprintf-js": "0.0.7"
