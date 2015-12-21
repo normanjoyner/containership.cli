@@ -1,6 +1,6 @@
 {
   "name": "containership.cli",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "dependencies": {
     "async": {
       "version": "0.9.0",
@@ -21,6 +21,40 @@
       "version": "3.2.0",
       "from": "https://registry.npmjs.org/lodash/-/lodash-3.2.0.tgz",
       "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.2.0.tgz"
+    },
+    "nomnom": {
+      "version": "1.8.1",
+      "from": "nomnom@",
+      "resolved": "https://registry.npmjs.org/nomnom/-/nomnom-1.8.1.tgz",
+      "dependencies": {
+        "underscore": {
+          "version": "1.6.0",
+          "from": "underscore@~1.6.0",
+          "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.6.0.tgz"
+        },
+        "chalk": {
+          "version": "0.4.0",
+          "from": "chalk@~0.4.0",
+          "resolved": "https://registry.npmjs.org/chalk/-/chalk-0.4.0.tgz",
+          "dependencies": {
+            "has-color": {
+              "version": "0.1.7",
+              "from": "has-color@~0.1.0",
+              "resolved": "https://registry.npmjs.org/has-color/-/has-color-0.1.7.tgz"
+            },
+            "ansi-styles": {
+              "version": "1.0.0",
+              "from": "ansi-styles@~1.0.0",
+              "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-1.0.0.tgz"
+            },
+            "strip-ansi": {
+              "version": "0.1.1",
+              "from": "strip-ansi@~0.1.0",
+              "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-0.1.1.tgz"
+            }
+          }
+        }
+      }
     },
     "npm": {
       "version": "2.2.0",
