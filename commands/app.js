@@ -143,6 +143,81 @@ module.exports = {
 
         edit: {
             options: {
+                application: {
+                    position: 1,
+                    help: "Name of the application to edit",
+                    metavar: "APPLICATION",
+                    required: true
+                },
+
+                engine: {
+                    help: "Engine used to start application",
+                    metavar: "ENGINE",
+                    choices: ["docker"],
+                    abbr: "x"
+                },
+
+                image: {
+                    help: "Application image",
+                    metavar: "IMAGE",
+                    abbr: "i"
+                },
+
+                "env-var": {
+                    list: true,
+                    help: "Environment variable for application",
+                    metavar: "ENV_VAR=VALUE",
+                    abbr: "e"
+                },
+
+                "network-mode": {
+                    help: "Application network mode",
+                    metavar: "NETWORK MODE",
+                    abbr: "n"
+                },
+
+                "container-port": {
+                    help: "Port application must listen on",
+                    metavar: "PORT",
+                    abbr: "p"
+                },
+
+                command: {
+                    help: "Application start command",
+                    metavar: "COMMAND",
+                    abbr: "s"
+                },
+
+                tag: {
+                    help: "Tag to add to application",
+                    metavar: "NAME=VALUE",
+                    list: true,
+                    abbr: "t"
+                },
+
+                cpus: {
+                    help: "CPUs allocated to application",
+                    metavar: "CPUS",
+                    abbr: "c"
+                },
+
+                memory: {
+                    help: "Memory (mb) allocated to application",
+                    metavar: "MEMORY",
+                    abbr: "m"
+                },
+
+                privileged: {
+                    help: "Run application containers in privileged mode",
+                    metavar: "PRIVILEGED",
+                    choices: ["true", "false"]
+                },
+
+                respawn: {
+                    help: "Respawn application containers when they die",
+                    metavar: "RESPAWN",
+                    choices: ["true", "false"]
+                }
 
             },
 
