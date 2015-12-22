@@ -137,15 +137,27 @@ module.exports = {
             callback: function(options){
                 var plugins_dir = [process.env["HOME"], ".containership", "plugins"].join("/");
 
-                npm.load({
-                    prefix: plugins_dir,
-                    "unsafe-perm": true
-                }, function(){
-                    if(_.has(authorized_plugins, options.plugin))
-                        options.plugin = authorized_plugins[options.plugin].source;
+                request({ url: "http://plugins.containership.io", json: true }, function(err, response){
+                    if(err || response.statusCode != 200)
+                        authorized_plugins = {};
+                    else
+                        authorized_plugins = response.body;
 
-                    console.log(["Installing plugin:", options.plugin].join(" "));
-                    npm.commands.install([options.plugin], function(err, data){});
+                    try{
+                        fs.mkdirSync(plugins_dir);
+                    }
+                    catch(e){}
+
+                    npm.load({
+                        prefix: plugins_dir,
+                        "unsafe-perm": true
+                    }, function(){
+                        if(_.has(authorized_plugins, options.plugin))
+                            options.plugin = authorized_plugins[options.plugin].source;
+
+                        console.log(["Installing plugin:", options.plugin].join(" "));
+                        npm.commands.install([options.plugin], function(err, data){});
+                    });
                 });
             }
         },
@@ -163,21 +175,33 @@ module.exports = {
             callback: function(options){
                 var plugins_dir = [process.env["HOME"], ".containership", "plugins"].join("/");
 
-                npm.load({
-                    prefix: plugins_dir,
-                    "unsafe-perm": true
-                }, function(){
-                    if(_.has(authorized_plugins, options.plugin))
-                        options.plugin = authorized_plugins[options.plugin].source;
+                request({ url: "http://plugins.containership.io", json: true }, function(err, response){
+                    if(err || response.statusCode != 200)
+                        authorized_plugins = {};
+                    else
+                        authorized_plugins = response.body;
 
-                    if(options.plugin.lastIndexOf("/") != -1){
-                        options.plugin = options.plugin.substring(options.plugin.lastIndexOf("/") + 1, options.plugin.length);
-                        if(options.plugin.indexOf(".git") != -1)
-                            options.plugin = options.plugin.substring(0, options.plugin.indexOf(".git"));
+                    try{
+                        fs.mkdirSync(plugins_dir);
                     }
+                    catch(e){}
 
-                    console.log(["Uninstalling plugin:", options.plugin].join(" "));
-                    npm.commands.uninstall([options.plugin], function(err, data){});
+                    npm.load({
+                        prefix: plugins_dir,
+                        "unsafe-perm": true
+                    }, function(){
+                        if(_.has(authorized_plugins, options.plugin))
+                            options.plugin = authorized_plugins[options.plugin].source;
+
+                        if(options.plugin.lastIndexOf("/") != -1){
+                            options.plugin = options.plugin.substring(options.plugin.lastIndexOf("/") + 1, options.plugin.length);
+                            if(options.plugin.indexOf(".git") != -1)
+                                options.plugin = options.plugin.substring(0, options.plugin.indexOf(".git"));
+                        }
+
+                        console.log(["Uninstalling plugin:", options.plugin].join(" "));
+                        npm.commands.uninstall([options.plugin], function(err, data){});
+                    });
                 });
             }
         },
@@ -195,15 +219,27 @@ module.exports = {
             callback: function(options){
                 var plugins_dir = [process.env["HOME"], ".containership", "plugins"].join("/");
 
-                npm.load({
-                    prefix: plugins_dir,
-                    "unsafe-perm": true
-                }, function(){
-                    if(_.has(authorized_plugins, options.plugin))
-                        options.plugin = authorized_plugins[options.plugin].source;
+                request({ url: "http://plugins.containership.io", json: true }, function(err, response){
+                    if(err || response.statusCode != 200)
+                        authorized_plugins = {};
+                    else
+                        authorized_plugins = response.body;
 
-                    console.log(["Updating plugin:", options.plugin].join(" "));
-                    npm.commands.update([options.plugin], function(err, data){});
+                    try{
+                        fs.mkdirSync(plugins_dir);
+                    }
+                    catch(e){}
+
+                    npm.load({
+                        prefix: plugins_dir,
+                        "unsafe-perm": true
+                    }, function(){
+                        if(_.has(authorized_plugins, options.plugin))
+                            options.plugin = authorized_plugins[options.plugin].source;
+
+                        console.log(["Updating plugin:", options.plugin].join(" "));
+                        npm.commands.update([options.plugin], function(err, data){});
+                    });
                 });
             }
         }
