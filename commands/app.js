@@ -5,6 +5,7 @@ var sprintf = require("sprintf-js").sprintf;
 var utils = require([__dirname, "..", "lib", "utils"].join("/"));
 var config = require([__dirname, "..", "lib", "config"].join("/")).config;
 var nomnom = require("nomnom")();
+var C2C = require("c2c");
 
 module.exports = {
 
@@ -17,6 +18,55 @@ module.exports = {
     },
 
     commands: {
+        "create-from-file": {
+            options: {
+                "docker-compose": {
+                    position: 1,
+                    help: "Path to Docker compose file",
+                    metavar: "DOCKER-COMPOSE",
+                    default: "./docker-compose.yml",
+                    required: true
+                },
+                "containership-compose": {
+                    position: 2,
+                    help: "Path to ContainerShip compose file",
+                    metavar: "CONTAINERSHIP-COMPOSE"
+                }
+            },
+
+            callback: function(options){
+                try{
+                    var c2c = new C2C({
+                       compose_path: options["docker-compose"],
+                       containership_path: options["containership-compose"]
+                    });
+                }
+                catch(err){
+                    process.stderr.write(err.message);
+                    process.exit(1);
+                }
+
+                c2c.convert(function(err, json){
+                    if(err){
+                        process.stderr.write(err.message);
+                        process.exit(1);
+                    }
+
+                    request.post("applications", {}, json, function(err, response){
+                        if(err){
+                            process.stderr.write("Could not create applications!");
+                            process.exit(1);
+                        }
+                        else if(response.statusCode != 201){
+                            process.stderr.write(response.body.error);
+                            process.exit(1);
+                        }
+                        else
+                            process.stdout.write(["Successfully created", _.keys(json).length, "applications!"].join(" "));
+                    });
+                });
+            }
+        },
         create: {
             options: {
                 application: {
