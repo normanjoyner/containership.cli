@@ -3,6 +3,9 @@ containership.cli
 
 ##About
 
+###Build Status
+[![Build Status](https://drone.containership.io/api/badges/containership/containership.cli/status.svg)](https://drone.containership.io/containership/containership.cli)
+
 ###Description
 Command line interface for ContainerShip
 

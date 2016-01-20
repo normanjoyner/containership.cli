@@ -1,0 +1,19 @@
+build:
+  image: library/node:0.10.41
+  commands:
+    - npm install
+    - npm test
+
+notify:
+  slack:
+    webhook_url: $$SLACK_RELEASES_WEBHOOK
+    channel: releases
+    username: drone
+
+publish:
+  npm:
+    username: "$$NPM_USERNAME"
+    password: "$$NPM_PASSWORD"
+    email: "$$NPM_EMAIL"
+    when:
+      event: tag
