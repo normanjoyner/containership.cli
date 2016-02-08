@@ -6,6 +6,7 @@ var request = require("request");
 var flat = require("flat");
 var sprintf = require("sprintf-js").sprintf;
 var nomnom = require("nomnom")();
+var async = require("async");
 
 module.exports = {
 
@@ -130,7 +131,8 @@ module.exports = {
                     position: 1,
                     help: "Name of the plugin to add",
                     metavar: "PLUGIN",
-                    required: true
+                    required: true,
+                    list: true
                 }
             },
 
@@ -138,9 +140,8 @@ module.exports = {
                 var plugins_dir = [process.env["HOME"], ".containership", "plugins"].join("/");
 
                 request({ url: "http://plugins.containership.io", json: true }, function(err, response){
-                    if(err || response.statusCode != 200)
-                        authorized_plugins = {};
-                    else
+                    var authorized_plugins = {};
+                    if (!err && response.statusCode == 200)
                         authorized_plugins = response.body;
 
                     try{
@@ -148,17 +149,26 @@ module.exports = {
                     }
                     catch(e){}
 
+                    console.log(["Installing plugin(s):", options.plugin.join(", ")].join(" "));
+
                     npm.load({
                         prefix: plugins_dir,
                         "unsafe-perm": true
-                    }, function(){
-                        if(_.has(authorized_plugins, options.plugin))
-                            options.plugin = authorized_plugins[options.plugin].source;
+                    }, function () {
+                        async.each(options.plugin, function(plugin, cb) {
+                            // if authorized plugin, set the source
+                            if (_.has(authorized_plugins, plugin))
+                                plugin = authorized_plugins[plugin].source;
 
-                        console.log(["Installing plugin:", options.plugin].join(" "));
-                        npm.commands.install([options.plugin], function(err, data){});
+                            npm.commands.install([plugin], function(err, data) {
+                                if (err)
+                                    process.stderr.write(["Failed to install plugin:", plugin, "\n"].join(" "))
+                                return cb();
+                            });
+                        });
                     });
                 });
+
             }
         },
 
@@ -168,7 +178,8 @@ module.exports = {
                     position: 1,
                     help: "Name of the plugin to remove",
                     metavar: "PLUGIN",
-                    required: true
+                    required: true,
+                    list: true
                 }
             },
 
@@ -176,9 +187,8 @@ module.exports = {
                 var plugins_dir = [process.env["HOME"], ".containership", "plugins"].join("/");
 
                 request({ url: "http://plugins.containership.io", json: true }, function(err, response){
-                    if(err || response.statusCode != 200)
-                        authorized_plugins = {};
-                    else
+                    var authorized_plugins = {};
+                    if(!err && response.statusCode == 200)
                         authorized_plugins = response.body;
 
                     try{
@@ -186,21 +196,30 @@ module.exports = {
                     }
                     catch(e){}
 
+                    console.log(["Uninstalling plugin(s):", options.plugin.join(", ")].join(" "));
+
                     npm.load({
                         prefix: plugins_dir,
                         "unsafe-perm": true
                     }, function(){
-                        if(_.has(authorized_plugins, options.plugin))
-                            options.plugin = authorized_plugins[options.plugin].source;
 
-                        if(options.plugin.lastIndexOf("/") != -1){
-                            options.plugin = options.plugin.substring(options.plugin.lastIndexOf("/") + 1, options.plugin.length);
-                            if(options.plugin.indexOf(".git") != -1)
-                                options.plugin = options.plugin.substring(0, options.plugin.indexOf(".git"));
-                        }
+                        async.each(options.plugin, function(plugin, cb) {
+                            // if authorized plugin, set the source
+                            if(_.has(authorized_plugins, plugin)) {
+                                plugin = authorized_plugins[plugin].source;
+                                if(plugin.lastIndexOf("/") != -1){
+                                    plugin = plugin.substring(plugin.lastIndexOf("/") + 1, plugin.length);
+                                    if(plugin.indexOf(".git") != -1)
+                                        plugin = plugin.substring(0, plugin.indexOf(".git"));
+                                }
+                            } 
+                            npm.commands.uninstall([plugin], function(err, data){
+                                if (err)
+                                    process.stderr.write(["Failed to uninstall", plugin, "\n"].join(" "));
+                                return cb();
+                            });
+                        });
 
-                        console.log(["Uninstalling plugin:", options.plugin].join(" "));
-                        npm.commands.uninstall([options.plugin], function(err, data){});
                     });
                 });
             }
