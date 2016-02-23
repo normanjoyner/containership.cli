@@ -122,6 +122,13 @@ module.exports = {
                     abbr: "t"
                 },
 
+                volume: {
+                    help: "Volume to bind-mount for application",
+                    metavar: "HOST_PATH:CONTAINER_PATH",
+                    list: true,
+                    abbr: "b"
+                },
+
                 cpus: {
                     help: "CPUs allocated to application",
                     metavar: "CPUS",
@@ -153,6 +160,11 @@ module.exports = {
                 if(_.has(options, "tag")){
                     options.tags = utils.parse_tags(options.tag);
                     delete options.tag;
+                }
+
+                if(_.has(options, "volume")){
+                    options.volumes = utils.parse_volumes(options.volume);
+                    delete options.volume;
                 }
 
                 if(_.has(options, "env-var")){
@@ -238,6 +250,13 @@ module.exports = {
                     abbr: "s"
                 },
 
+                volume: {
+                    help: "Volume to bind-mount for application",
+                    metavar: "HOST_PATH:CONTAINER_PATH",
+                    list: true,
+                    abbr: "b"
+                },
+
                 tag: {
                     help: "Tag to add to application",
                     metavar: "NAME=VALUE",
@@ -272,18 +291,23 @@ module.exports = {
             },
 
             callback: function(options){
-                var config = _.omit(options, ["0", "_", "application", "subcommand"]);
-                if(_.has(config, "tag")){
-                    config.tags = utils.parse_tags(config.tag);
-                    delete config.tag;
+                options = _.omit(options, ["0", "_", "application", "subcommand"]);
+                if(_.has(options, "tag")){
+                    options.tags = utils.parse_tags(options.tag);
+                    delete options.tag;
                 }
 
-                if(_.has(config, "env-var")){
-                    config.env_vars = utils.parse_tags(config["env-var"]);
-                    delete config["env-var"];
+                if(_.has(options, "volume")){
+                    options.volumes = utils.parse_volumes(options.volume);
+                    delete options.volume;
                 }
 
-                request.put(["applications", options.application].join("/"), {}, config, function(err, response){
+                if(_.has(options, "env-var")){
+                    options.env_vars = utils.parse_tags(options["env-var"]);
+                    delete options["env-var"];
+                }
+
+                request.put(["applications", options.application].join("/"), {}, options, function(err, response){
                     if(err){
                         process.stderr.write(["Could not update application ", options.application, "!"].join(""));
                         process.exit(1);
