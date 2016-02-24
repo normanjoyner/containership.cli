@@ -155,7 +155,7 @@ module.exports = {
             },
 
             callback: function(options){
-                options = options, _.omit(options, ["0", "_"]);
+                options = _.omit(options, ["0", "_"]);
 
                 if(_.has(options, "tag")){
                     options.tags = utils.parse_tags(options.tag);
@@ -291,7 +291,8 @@ module.exports = {
             },
 
             callback: function(options){
-                options = _.omit(options, ["0", "_", "application", "subcommand"]);
+                options = _.omit(options, ["0", "_"]);
+
                 if(_.has(options, "tag")){
                     options.tags = utils.parse_tags(options.tag);
                     delete options.tag;
