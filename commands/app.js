@@ -1,4 +1,5 @@
 var _ = require("lodash");
+var async = require("async");
 var flat = require("flat");
 var request = require([__dirname, "..", "lib", "request"].join("/"));
 var sprintf = require("sprintf-js").sprintf;
@@ -6,6 +7,13 @@ var utils = require([__dirname, "..", "lib", "utils"].join("/"));
 var config = require([__dirname, "..", "lib", "config"].join("/")).config;
 var nomnom = require("nomnom")();
 var C2C = require("c2c");
+var url = require("url");
+var colors = require("colors");
+
+var protocols = {
+    http: require("http"),
+    https: require("https")
+}
 
 module.exports = {
 
@@ -533,6 +541,134 @@ module.exports = {
                         process.exit(1);
                     }
                 });
+            }
+        },
+
+        logs: {
+            options: {
+                application: {
+                    position: 1,
+                    help: "Name of the application to fetch logs for",
+                    metavar: "APPLICATION",
+                    required: true
+                },
+                "container-id": {
+                    list: true,
+                    help: "container id to fetch logs for",
+                    metavar: "CONTAINER_ID"
+                },
+                all: {
+                    help: "fetch logs for all containers",
+                    flag: true,
+                    default: false
+                }
+            },
+
+            callback: function(options){
+                var local_request = {
+                    get: function(path, qs, fn){
+                        var options = {
+                            url: [config["api-url"], config["api-version"], path].join("/"),
+                            headers: config.headers || {},
+                            method: "GET",
+                            qs: qs,
+                            json: true,
+                            strictSSL: config.strict_ssl || true
+                        }
+
+                        async.waterfall(_.map(config.middleware || [], function(middleware){
+                            return function(fn){
+                                middleware(options, fn);
+                            }
+                        }), function(err){
+                            var req_opts = {
+                                host: url.parse(options.url).hostname,
+                                path: url.parse(options.url).path,
+                                method: options.method,
+                                headers: options.headers || {}
+                            }
+
+                            if(url.parse(options.url).port)
+                                req_opts.port = url.parse(options.url).port;
+
+                            req_opts.headers["Content-Type"] = "application/json"
+                            var protocol = url.parse(options.url).protocol;
+                            protocol = protocol.substring(0, protocol.length -1);
+
+                            var req = protocols[protocol].request(req_opts, function(response){
+                                return fn(undefined, response);
+                            });
+
+                            req.on("error", fn);
+
+                            if(req_opts.method == "POST")
+                                req.write(JSON.stringify(options.json));
+
+                            req.end();
+                        });
+                    }
+                }
+
+                var get_application = function(fn){
+                    request.get(["applications", options.application].join("/"), {}, function(err, response){
+                        if(err)
+                            return fn(new Error(["Could not fetch application ", options.application, "!"].join("")));
+                        else if(response.statusCode == 404)
+                            return fn(new Error(["Application", options.application, "does not exist!"].join(" ")));
+                        else if(response.statusCode == 200)
+                            return fn(undefined, _.pluck(response.body.containers, "id"));
+                    });
+                }
+
+                var fetch_logs = function(){
+                    _.each(options["container-id"], function(container_id){
+                        local_request.get(["logs", options.application, "containers", container_id].join("/"), {}, function(err, response){
+                            if(err || response.statusCode != 200)
+                                process.stderr.write(["Could not fetch logs for container ", container_id, " of application ", options.application, "!\n"].join(""));
+                            else{
+                              response.on("data", function(chunk){
+                                try{
+                                    json = JSON.parse(chunk);
+                                    if(json.type == "stdout")
+                                        console.log(["[", json.name, "]\t", json.data].join(""));
+                                    else if(json.type == "stderr")
+                                        console.log(["[", json.name, "]\t", json.data].join("").red);
+                                }
+                                catch(e){}
+                              });
+                            }
+                        });
+                    });
+                }
+
+                if(options.all){
+                    get_application(function(err, container_ids){
+                        if(err){
+                            process.stderr.write(err.message);
+                            process.exit(1);
+                        }
+                        else{
+                            options["container-id"] = container_ids;
+                            fetch_logs();
+                        }
+                    });
+                }
+                else if(!options["container-id"]){
+                    get_application(function(err, container_ids){
+                        if(err){
+                            process.stderr.write(err.message);
+                            process.exit(1);
+                        }
+                        else{
+                            console.log("Please pass any of the following container ids to fetch logs, or pass the --all flag to get logs for every container:");
+                            _.each(container_ids, function(container_id){
+                                console.log(container_id);
+                            });
+                        }
+                    });
+                }
+                else
+                    fetch_logs();
             }
         }
     }
