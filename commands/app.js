@@ -152,13 +152,13 @@ module.exports = {
                 privileged: {
                     help: "Run application containers in privileged mode",
                     metavar: "PRIVILEGED",
-                    choices: ["true", "false"]
+                    choices: [true, false]
                 },
 
                 respawn: {
                     help: "Respawn application containers when they die",
                     metavar: "RESPAWN",
-                    choices: ["true", "false"]
+                    choices: [true, false]
                 }
             },
 
@@ -287,13 +287,13 @@ module.exports = {
                 privileged: {
                     help: "Run application containers in privileged mode",
                     metavar: "PRIVILEGED",
-                    choices: ["true", "false"]
+                    choices: [true, false]
                 },
 
                 respawn: {
                     help: "Respawn application containers when they die",
                     metavar: "RESPAWN",
-                    choices: ["true", "false"]
+                    choices: [true, false]
                 }
 
             },
