@@ -1,91 +1,81 @@
-var fs = require("fs");
-var _ = require("lodash");
-var request = require([__dirname, "..", "lib", "request"].join("/"));
-var nomnom = require("nomnom")();
+'use strict';
+
+const request = require('../lib/request');
+
+const fs = require('fs');
 
 module.exports = {
+    name: 'backup',
+    description: 'backup and restore applications on a Containership cluster',
+    commands: []
+};
 
-    nomnom: function(){
-        _.each(module.exports.commands, function(command, command_name){
-            nomnom.command(command_name).options(command.options).callback(command.callback)
-        });
-
-        return nomnom;
-    },
-
-    commands: {
-        create: {
-            options: {
-                persistence: {
-                    position: 1,
-                    help: "Type of persistence to use ['local']",
-                    required: true,
-                    choices: ["local"]
-                },
-
-                file: {
-                    help: "Local file to write to",
-                    default: ["", "tmp", ["containership", "backup", new Date().valueOf()].join(".")].join("/")
-                }
-            },
-
-            callback: function(options){
-                if(options.persistence == "local"){
-                    request.get("applications", {}, function(err, response){
-                        if(err){
-                            process.stderr.write(["Error writing file to", options.file].join(" "));
-                            process.exit(1);
-                        }
-
-                        fs.writeFile(options.file, JSON.stringify(response.body), function(err){
-                            if(err){
-                                process.stderr.write(["Error writing file to", options.file].join(" "));
-                                process.exit(1);
-                            }
-
-                            console.log(["Successfully wrote file to", options.file].join(" "));
-                        });
-                    });
-                }
-            }
+module.exports.commands.push({
+    name: 'create',
+    description: 'backup applications on a Containership cluster',
+    options: {
+        persistence: {
+            description: 'Type of persistence to use [local]',
+            alias: 'p',
+            default: 'local',
+            choices: ['local']
         },
-
-        restore: {
-            options: {
-                persistence: {
-                    position: 1,
-                    help: "Type of persistence to use ['local']",
-                    required: true,
-                    choices: ["local"]
-                },
-
-                file: {
-                    help: "Local file to restore from",
-                    required: true
-                }
-            },
-            callback: function(options){
-                if(options.persistence == "local"){
-                    fs.readFile(options.file, function(err, applications){
-                        if(err){
-                            process.stderr.write(["Error reading file: ", options.file].join(" "));
-                            process.exit(1);
-                        }
-                        else{
-                            request.post("applications", {}, JSON.parse(applications), function(err, response){
-                                if(err || response.statusCode != 201){
-                                    process.stderr.write("Error restoring applications!");
-                                    process.exit(1);
-                                }
-                                else
-                                    console.log("Successfully restored applications!");
-                            });
-                        }
-                    });
-                }
-            }
+        file: {
+            description: 'Local file to write to',
+            alias: 'f',
+            default: `/tmp/containership.backup.${new Date().valueOf()}`
         }
+    },
+    callback: (argv) => {
+        if(argv.persistence === 'local') {
+            request.get('applications', {}, (err, response) => {
+                if(err) {
+                    return console.error(`Error writing file to ${argv.file}`);
+                }
 
+                return fs.writeFile(argv.file, JSON.stringify(response.body), (err) => {
+                    if(err) {
+                        return console.error(`Error writing file to ${argv.file}`);
+                    }
+
+                    return console.info(`Successfully wrote file to ${argv.file}\n`);
+                });
+            });
+        }
     }
+});
 
-}
+module.exports.commands.push({
+    name: 'restore',
+    description: 'restore applications from existing backup to a containership cluster',
+    options: {
+        persistence: {
+            description: 'Type of persistence to use [local]',
+            alias: 'p',
+            default: 'local',
+            choices: ['local']
+        },
+        file: {
+            description: 'Local file to restore from',
+            alias: 'f',
+            required: true
+        }
+    },
+    callback: (argv) => {
+        if(argv.persistence === 'local') {
+            fs.readFile(argv.file, (err, applications) => {
+                if(err) {
+                    return console.error(`Error reading file: ${argv.file}`);
+                }
+
+                return request.post('applications', {}, JSON.parse(applications), (err, response) => {
+                    if(err || response.statusCode != 201) {
+                        return console.error('Error restoring applications!');
+                    }
+
+                    return console.info('Successfully restored applications!\n');
+                });
+            });
+        }
+    }
+});

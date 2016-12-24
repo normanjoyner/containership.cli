@@ -1,189 +1,200 @@
-var _ = require("lodash");
-var flat = require("flat");
-var request = require([__dirname, "..", "lib", "request"].join("/"));
-var sprintf = require("sprintf-js").sprintf;
-var utils = require([__dirname, "..", "lib", "utils"].join("/"));
-var nomnom = require("nomnom")();
+'use strict';
+
+const request = require('../lib/request');
+const utils = require('../lib/utils');
+const Table = require('../lib/table');
+
+const _ = require('lodash');
+const chalk = require('chalk');
+const flatten = require('flat');
+const unflatten = flatten.unflatten;
 
 module.exports = {
+    name: 'host',
+    description: 'List and manipulate hosts running on the configured containership cluster.',
+    commands: []
+};
 
-    nomnom: function(){
-        _.each(module.exports.commands, function(command, command_name){
-            nomnom.command(command_name).options(command.options).callback(command.callback)
+module.exports.commands.push({
+    name: 'list',
+    description: 'List hosts on the configured cluster.',
+    callback: () => {
+        return request.get('hosts', {}, (err, response) => {
+            if(err) {
+                return console.error('Could not fetch hosts!');
+            }
+
+            const headers = [
+                'ID',
+                'START_TIME',
+                'MODE',
+                'CONTAINERS'
+            ];
+
+            const data = Object.keys(response.body).map(key => {
+                const host = response.body[key];
+
+                return [
+                    host.id,
+                    new Date(host.start_time).toString(),
+                    `${host.mode} ${(host.praetor && host.praetor.leader) ? '*' : ''}`,
+                    host.containers ? host.containers.length : 0
+                ];
+            });
+
+            if (data.length === 0) {
+                return console.error('There are currently no hosts on the configured cluster!');
+            }
+
+            const output = Table.createTable(headers, data);
+            return console.info(output);
         });
+    }
+});
 
-        return nomnom;
-    },
-
-    commands: {
-        list: {
-            options: {},
-
-            callback: function(options){
-                request.get("hosts", {}, function(err, response){
-                    if(err){
-                        process.stderr.write("Could not fetch hosts!");
-                        process.exit(1);
-                    }
-
-                    console.log(sprintf("%-20s %-30s %-50s %-10s %-20s %-20s %-10s",
-                        "ID",
-                        "HOST NAME",
-                        "START TIME",
-                        "MODE",
-                        "PRIVATE IP",
-                        "PUBLIC IP",
-                        "CONTAINERS"
-                    ));
-
-                    _.each(_.sortBy(response.body, "id"), function(host){
-                        console.log(sprintf("%-20s %-30s %-50s %-10s %-20s %-20s %-10s",
-                            host.id,
-                            host.host_name,
-                            new Date(host.start_time),
-                            [host.mode, host.praetor.leader ? "*" : ""].join(""),
-                            host.address.private,
-                            host.address.public,
-                            host.containers.length
-                        ));
-                    });
-                });
+module.exports.commands.push({
+    name: 'show <host_name>',
+    description: 'Show requested host information.',
+    callback: (argv) => {
+        return request.get(`hosts/${argv.host_name}`, {}, (err, response) => {
+            if(err) {
+                return console.error('Could not fetch host!');
             }
-        },
 
-        show: {
-            options: {
-                host: {
-                    position: 1,
-                    help: "Name of the host to fetch",
-                    metavar: "HOST",
-                    required: true
-                }
-            },
-
-            callback: function(options){
-                request.get(["hosts", options.host].join("/"), {}, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not fetch host", options.host, "!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 404){
-                        process.stderr.write(["Host", options.host , "does not exist!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode != 200){
-                        process.stderr.write(response.body.error);
-                        process.exit(1);
-                    }
-                    else{
-                        var used_cpus = 0;
-                        var used_memory = 0;
-                        var overhead = 32;
-
-                        console.log(sprintf("%-20s %-100s", "HOST NAME", response.body.host_name));
-                        console.log(sprintf("%-20s %-100s", "START TIME", new Date(response.body.start_time)));
-                        console.log(sprintf("%-20s %-100s", "MODE", response.body.mode));
-                        if(response.body.mode == "leader")
-                            console.log(sprintf("%-20s %-100s", "CONTROLLING LEADER", response.body.praetor.leader));
-                        console.log(sprintf("%-20s %-100s", "PORT", response.body.port));
-                        console.log(sprintf("%-20s %-100s", "PUBLIC IP", response.body.address.public));
-                        console.log(sprintf("%-20s %-100s", "PRIVATE IP", response.body.address.private));
-                        console.log();
-                        console.log(sprintf("%-20s %-50s %-50s", "TAGS", "NAME", "VALUE"));
-                        _.each(flat(response.body.tags), function(val, key){
-                            console.log(sprintf("%-20s %-50s %-50s", "", key, val));
-                        });
-                        console.log();
-                        if(response.body.mode == "follower"){
-                            console.log(sprintf("%-20s %-50s %-20s %-20s", "CONTAINERS", "ID", "APPLICATION", "STATUS"));
-                            _.each(response.body.containers, function(container){
-                                used_cpus += parseFloat(container.cpus);
-                                used_memory += _.parseInt(container.memory) + overhead;
-                                console.log(sprintf("%-20s %-50s %-20s %-20s", "", container.id, container.application, container.status));
-                            });
-                            console.log();
-
-                            used_cpus = used_cpus.toFixed(2);
-
-                            var available_cpus = parseFloat(response.body.cpus) - used_cpus;
-                            var available_memory = (_.parseInt(response.body.memory) / (1024 * 1024)) - used_memory;
-
-                            console.log(sprintf("%-20s %-100s", "AVAILABLE CPUS", available_cpus));
-                            console.log(sprintf("%-20s %-100s", "USED CPUS", used_cpus));
-                            console.log(sprintf("%-20s %-100s", "AVAILABLE MEMORY", [Math.floor(available_memory), "MB"].join("")));
-                            console.log(sprintf("%-20s %-100s", "USED MEMORY", [used_memory, "MB"].join("")));
-                        }
-                    }
-                });
+            if (response.statusCode === 404) {
+                return console.error(`Host ${argv.host_name} could not be found!`);
             }
-        },
 
-        edit: {
-            options: {
-                host: {
-                    position: 1,
-                    help: "Name of the host to edit",
-                    metavar: "HOST",
-                    required: true
-                },
+            const headers = [
+                'ID',
+                'START_TIME',
+                'MODE',
+                'PUBLIC_IP',
+                'PRIVATE_IP',
+                'TAGS'
+            ];
 
-                tag: {
-                    help: "host tags",
-                    list: true
-                }
-            },
+            const host = response.body;
 
-            callback: function(options){
-                var config = _.omit(options, ["0", "_", "host", "subcommand"]);
-                if(_.has(config, "tag")){
-                    config.tags = utils.parse_tags(config.tag);
-                    delete config.tag;
-                }
+            const tags = _.map(flatten(host.tags), (v, k) => {
+                return `${chalk.gray(k)}: ${v}`;
+            });
 
-                request.put(["hosts", options.host].join("/"), {}, config, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not update host ", options.host, "!"].join(""));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode != 200){
-                        process.stderr.write(response.body.error);
-                        process.exit(1);
-                    }
-                    else
-                        process.stdout.write(["Successfully updated host ", options.host, "!"].join(""));
+            const data = [
+                host.id,
+                new Date(host.start_time).toString(),
+                host.mode,
+                host.address.public,
+                host.address.private,
+                tags.join('\n')
+            ];
+
+            if (host.mode === 'follower') {
+                headers.push(...[
+                    'CPUS (USED / TOTAL)',
+                    'MEMORY (USED / TOTAL)',
+                    'CONTAINERS'
+                ]);
+
+                const overhead = 32;
+                let used_cpus = 0;
+                let used_memory = 0;
+                host.containers.forEach((container) => {
+                    used_cpus += parseFloat(container.cpus);
+                    used_memory += parseFloat(container.memory) + overhead;
                 });
-            }
-        },
+                const total_cpus = parseFloat(host.cpus).toFixed(3);
+                const total_memory = parseInt(parseInt(host.memory) / (1024 * 1024));
 
-        delete: {
-            options: {
-                host: {
-                    position: 1,
-                    help: "Name of the host to delete",
-                    metavar: "HOST",
-                    required: true
-                }
-            },
-
-            callback: function(options){
-                request.delete(["hosts", options.host].join("/"), {}, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not delete host", options.host, "!"].join(""));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 404){
-                        process.stderr.write(["Host", options.host, "does not exist!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 204)
-                        process.stdout.write(["Successfully deleted host", options.host, "!"].join(""));
-                    else{
-                        process.stderr.write(["Could not delete host", options.host, "!"].join(""));
-                        process.exit(1);
-                    }
-                });
+                data.push(`${used_cpus.toFixed(3)} / ${total_cpus}`);
+                data.push(`${used_memory} MB / ${total_memory} MB`);
+                data.push(host.containers.length);
             }
+
+            const output = Table.createVerticalTable(headers, [data]);
+            return console.info(output);
+        });
+    }
+});
+
+module.exports.commands.push({
+    name: 'edit <host_name>',
+    description: 'Edit host.',
+    options: {
+        tag: {
+            description: 'Add/remove host tags.',
+            alias: 't',
+            array: true
         }
+    },
+    callback: (argv) => {
+        let options = _.omit(argv, ['h', 'help', '$0', '_']);
+        options = parse_update_body(options);
+
+        return request.get(`hosts/${argv.host_name}`, {}, (err, response) => {
+            if (err) {
+                process.stderr.write(`Could not update host ${argv.host_name}!`);
+                process.exit(1);
+            }
+
+            if (response.statusCode === 404) {
+                return console.error(`Host ${argv.host_name} could not be found!`);
+            }
+
+            const host = response.body;
+
+            host.tags = flatten(host.tags);
+            const to_remove_tag = _.keys(flatten(_.pickBy(options.tags, val => val !== false && !val)));
+            to_remove_tag.forEach((key) => {
+                delete host.tags[key];
+            });
+
+            const to_add_tag = flatten(_.pickBy(options.tags, val => val));
+            options.tags = unflatten(_.merge(host.tags, to_add_tag));
+
+            return request.put(`hosts/${argv.host_name}`, {}, options, (err, response) => {
+                if(err) {
+                    return console.error(`Could not update host ${argv.host_name}!`);
+                }
+
+                if(response.statusCode !== 200) {
+                    return console.error(response.body.error);
+                }
+
+                return console.info(`Successfully updated host ${argv.host_name}!`);
+            });
+        });
+    }
+});
+
+module.exports.commands.push({
+    name: 'disconnect <host_name>',
+    description: 'Disconnect Containership agent on host.',
+    callback: (argv) => {
+        return request.delete(`hosts/${argv.host_name}`, {}, (err, response) => {
+            if(err) {
+                return console.error(`Could not disconnect  containership agent on host ${argv.host_name}!`);
+            }
+
+            if(response.statusCode === 404) {
+                return console.error(`Host ${argv.host_name} does not exist!`);
+            }
+
+            if(response.statusCode !== 204) {
+                return console.error(`Could not disconnect containership agent on host ${argv.host_name}!`);
+            }
+
+            return console.info(`Successfully disconnected containership agent on host ${argv.host_name}!`);
+        });
+    }
+});
+
+function parse_update_body(options) {
+    if(_.has(options, 'tag')) {
+        options.tags = utils.parse_tags(options.tag);
+        delete options.tag;
+        delete options.t;
     }
 
+    return options;
 }
