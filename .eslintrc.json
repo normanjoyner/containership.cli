@@ -33,6 +33,7 @@
         "no-console": 0,
         "accessor-pairs": 2,
         "constructor-super": 2,
+        "keyword-spacing": ["error", { "after": false }],
         "arrow-spacing": [2, { "before": true, "after": true }],
         "block-spacing": [2, "always"],
         "handle-callback-err": [2, "^(err|error)$" ],

@@ -7,10 +7,10 @@ const Table = require('../lib/table');
 
 module.exports = {
     name: 'info',
-    description: 'Show info about current active cluster',
+    description: 'Show info about current active cluster.',
     callback: () => {
         return request.get('cluster/state', {}, (err, response) => {
-            if (err) {
+            if(err) {
                 return console.error(err);
             }
 
@@ -27,7 +27,7 @@ module.exports = {
             }, 0);
 
             const total_resources = _.reduce(hosts, (acc, host) => {
-                if (host.mode === 'follower') {
+                if(host.mode === 'follower') {
                     acc.cpus += host.cpus;
                     acc.memory += host.memory;
                 }
@@ -36,7 +36,7 @@ module.exports = {
             }, { cpus: 0, memory: 0 });
 
             const used_resources = _.reduce(containers, (acc, container) => {
-                if (container.status === 'loaded') {
+                if(container.status === 'loaded') {
                     acc.cpus += container.cpus;
                     acc.memory += container.memory;
                 }

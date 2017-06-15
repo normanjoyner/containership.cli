@@ -1,19 +1,19 @@
 'use strict';
 
 const configuration = require('../lib/configuration');
-const Table = require('../lib/table');
 const csUtils = require('../lib/utils');
+const Table = require('../lib/table');
 
 const _ = require('lodash');
+const fs = require('fs');
 const npm = require('npm');
 const request = require('request');
-const fs = require('fs');
 
 const PLUGIN_DIR = `${process.env.HOME}/.containership/plugins`;
 
 module.exports = {
     name: 'client-plugin',
-    description: 'List and manipulate plugins for Containership client',
+    description: 'List and manipulate plugins for Containership client.',
     commands: []
 };
 
@@ -26,16 +26,16 @@ function sync(silent) {
 
         let req;
 
-        try {
+        try{
             delete require.cache[require.resolve(plugin_path)];
             req = require(plugin_path);
         } catch(e) {
-            if (e) { /* ignore */ }
+            if(e) { /* ignore */ }
         }
 
         let plugin = typeof req === 'function' ? new req().cli : req.cli;
 
-        if (plugin) {
+        if(plugin) {
             valid_plugins[plugin_name.replace('containership.plugin.', '')] = {
                 path: plugin_path
             };
@@ -46,7 +46,7 @@ function sync(silent) {
     new_config.plugins = valid_plugins;
     configuration.set(new_config);
 
-    if (silent) {
+    if(silent) {
         return;
     }
 
@@ -58,7 +58,7 @@ function sync(silent) {
         plugin = require(plugin_path);
         plugin = typeof plugin === 'function' ? new plugin().cli : plugin.cli;
 
-        return [
+        return[
             plugin.name,
             require(`${plugin_path}/package.json`).version,
             csUtils.split_on_line_length(plugin.description, 48),
@@ -66,7 +66,7 @@ function sync(silent) {
         ];
     });
 
-    if (data.length === 0) {
+    if(data.length === 0) {
         return console.error('You have no valid client plugins configured');
     }
 
@@ -99,7 +99,7 @@ module.exports.commands.push({
             plugin = require(plugin_path);
             plugin = typeof plugin === 'function' ? new plugin().cli : plugin.cli;
 
-            return [
+            return[
                 plugin.name,
                 require(`${plugin_path}/package.json`).version,
                 csUtils.split_on_line_length(plugin.description, 48),
@@ -107,7 +107,7 @@ module.exports.commands.push({
             ];
         });
 
-        if (data.length === 0) {
+        if(data.length === 0) {
             return console.error('You have no valid client plugins configured');
         }
 
@@ -138,11 +138,11 @@ module.exports.commands.push({
 
 function getOfficialContainershipPlugins(callback) {
     return request({ url: 'https://plugins.containership.io', json: true }, (err, response) => {
-        if (err) {
+        if(err) {
             return callback(err);
         }
 
-        if (response.statusCode !== 200) {
+        if(response.statusCode !== 200) {
             return callback('Failed to search for plugins.');
         }
 
@@ -155,18 +155,18 @@ module.exports.commands.push({
     description: 'Search plugins.',
     callback: (argv) => {
         return getOfficialContainershipPlugins((err, plugins) => {
-            if (err) {
+            if(err) {
                 return console.error(err);
             }
 
             const headers = ['NAME', 'SOURCE', 'DESCRIPTION'];
 
             const data = _.map(plugins, (plugin, name) => {
-                if (argv.name && !name.includes(argv.name)) {
+                if(argv.name && !name.includes(argv.name)) {
                     return;
                 }
 
-                return [
+                return[
                     name,
                     plugin.source,
                     csUtils.split_on_line_length(plugin.description, 98)
@@ -198,18 +198,18 @@ function modify_plugin(options) {
     let source = official_plugin ? official_plugin.source : plugin;
     plugin = source;
 
-    if (version) {
+    if(version) {
         source = `${source}@${version}`;
     }
 
     let branchIndex = plugin.indexOf('#');
     let orgIndex = plugin.charAt === '@' ? -1 : plugin.indexOf('/') + 1;
 
-    if (branchIndex === -1) {
+    if(branchIndex === -1) {
         branchIndex = plugin.length;
     }
 
-    if (orgIndex === -1) {
+    if(orgIndex === -1) {
         orgIndex = 0;
     }
 
@@ -222,22 +222,22 @@ function modify_plugin(options) {
         'unsafe-perm': true
     }, () => {
         return npm.commands.ls([ module_search ], { json: true }, (err, data) => {
-            if (err) {
+            if(err) {
                 return console.error('Failed to add plugin!');
             }
 
-            if (isAdd && _.keys(data.dependencies).indexOf(module_search) !== -1) {
+            if(isAdd && _.keys(data.dependencies).indexOf(module_search) !== -1) {
                 return console.error(`Plugin ${module_search} is already installed, please see 'csctl client-plugin upgrade' for upgrading existing plugins.`);
             }
 
-            if ((isRemove || isUpgrade) && _.keys(data.dependencies).indexOf(module_search) === -1) {
+            if((isRemove || isUpgrade) && _.keys(data.dependencies).indexOf(module_search) === -1) {
                 return console.error(`Plugin ${module_search} is not already installed, please see 'csctl client-plugin add' for installing new plugins.`);
             }
 
             const npm_cmd = (isAdd || isUpgrade) ? 'install' : 'remove';
 
             return npm.commands[npm_cmd]([isRemove ? module_search : source], (err) => {
-                if (err) {
+                if(err) {
                     console.error(`Failed to ${options.type} plugin!`);
                     return console.error(err.message);
                 }
@@ -246,7 +246,7 @@ function modify_plugin(options) {
 
                 let msg = `Succesfully removed the ${plugin} plugin!`;
 
-                if (isAdd || isUpgrade) {
+                if(isAdd || isUpgrade) {
                     msg = `Succesfully ${options.type}d the ${plugin} plugin!`;
                 }
 
@@ -261,7 +261,7 @@ module.exports.commands.push({
     description: 'Add plugins.',
     callback: (argv) => {
         return getOfficialContainershipPlugins((err, official_plugins) => {
-            if (err) {
+            if(err) {
                 return console.error(err);
             }
 
@@ -279,7 +279,7 @@ module.exports.commands.push({
     description: 'Upgrade plugins.',
     callback: (argv) => {
         return getOfficialContainershipPlugins((err, official_plugins) => {
-            if (err) {
+            if(err) {
                 return console.error(err);
             }
 
@@ -297,7 +297,7 @@ module.exports.commands.push({
     description: 'Removes a plugin.',
     callback: (argv) => {
         return getOfficialContainershipPlugins((err, official_plugins) => {
-            if (err) {
+            if(err) {
                 return console.error(err);
             }
 

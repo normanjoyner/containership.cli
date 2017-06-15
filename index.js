@@ -2,9 +2,9 @@
 
 const configuration = require('./lib/configuration');
 
+const _ = require('lodash');
 const fs = require('fs');
 const yargs = require('yargs');
-const _ = require('lodash');
 
 class ContainershipCli {
     constructor(options) {
@@ -21,7 +21,7 @@ class ContainershipCli {
         this.plugin_commands = _.chain(conf.plugins)
             .map((plugin, name) => {
                 let req;
-                try {
+                try{
                     req = require(plugin.path);
                 } catch(e) {
                     console.warn(`Plugin ${name} no longer exists in plugin directory...removing from config.`);
@@ -39,7 +39,7 @@ class ContainershipCli {
     }
 
     run() {
-        if (yargs.argv._.length === 0) {
+        if(yargs.argv._.length === 0) {
             return this.unknownCommand();
         }
 
@@ -48,13 +48,13 @@ class ContainershipCli {
         let cmd = null;
 
         // eslint-disable-next-line no-cond-assign
-        if (cmd = _.find(this.commands, { name: cmd_name })) {
+        if(cmd = _.find(this.commands, { name: cmd_name })) {
             this.parseCommand(yargs, cmd);
             return yargs.help().argv;
         }
 
         // eslint-disable-next-line no-cond-assign
-        if (cmd = _.find(this.plugin_commands, { name: cmd_name })) {
+        if(cmd = _.find(this.plugin_commands, { name: cmd_name })) {
             this.parseCommand(yargs, cmd);
             return yargs.help().argv;
         }
@@ -72,7 +72,7 @@ class ContainershipCli {
 
     parseCommand(yargs, def) {
         // has sub-commands defined
-        if (def.commands) {
+        if(def.commands) {
             yargs.command({
                 command: def.name,
                 description: def.description,
@@ -84,7 +84,7 @@ class ContainershipCli {
                         return this.parseCommand(yargs, cmd);
                     });
 
-                    if (!hasDefault) {
+                    if(!hasDefault) {
                         yargs.command('*', '', {}, () => {
                             _.forEach(_.sortBy(def.commands, cmd => cmd.name), cmd => {
                                 hasDefault = hasDefault || cmd === '*';
@@ -96,7 +96,7 @@ class ContainershipCli {
                     }
                 }
             });
-        } else if (def.callback) {
+        } else if(def.callback) {
             yargs.command(def.name, def.description, def.options || {}, def.callback);
         }
     }

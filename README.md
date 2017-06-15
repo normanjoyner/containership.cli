@@ -24,8 +24,8 @@ From the containership executable, you can see the available commands and option
 
 or
 
-`docker run -v $HOME/.containership:$HOME/.containership -it containership/containership.cli --help
+`docker run -v $HOME/.containership:$HOME/.containership containership/containership.cli --help
 
-##Contributing
+## Contributing
 
 Pull requests and issues are encouraged!

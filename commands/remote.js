@@ -1,8 +1,8 @@
 'use strict';
 
 const configuration = require('../lib/configuration');
-const Table = require('../lib/table');
 const csUtils = require('../lib/utils');
+const Table = require('../lib/table');
 
 const _ = require('lodash');
 
@@ -16,13 +16,13 @@ module.exports = {
 
 module.exports.commands.push({
     name: 'add <remote_name> <remote_url>',
-    description: 'Add a remote pointing to a containership cluster',
+    description: 'Add a remote pointing to a containership cluster.',
     callback: (argv) => {
         const conf = configuration.get();
 
         const remote_name = argv.remote_name;
 
-        if (conf.remotes[remote_name]) {
+        if(conf.remotes[remote_name]) {
             return console.error(`Remote ${remote_name} already exists!`);
         }
 
@@ -44,8 +44,8 @@ module.exports.commands.push({
 
         const remote_name = argv.remote_name;
 
-        if (!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist!`);
+        if(!conf.remotes[remote_name]) {
+            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         conf.remotes[remote_name].url = argv.remote_url;
@@ -57,14 +57,14 @@ module.exports.commands.push({
 
 module.exports.commands.push({
     name: 'set-version <remote_name> <remote_version>',
-    description: 'Set version on remote',
+    description: 'Set version on remote.',
     callback: (argv) => {
         const conf = configuration.get();
 
         const remote_name = argv.remote_name;
 
-        if (!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist!`);
+        if(!conf.remotes[remote_name]) {
+            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         conf.remotes[remote_name].version = argv.remote_version;
@@ -76,14 +76,14 @@ module.exports.commands.push({
 
 module.exports.commands.push({
     name: 'set-active <remote_name>',
-    description: 'Set a remote as the default active remote',
+    description: 'Set a remote as the default active remote.',
     callback: (argv) => {
         const conf = configuration.get();
 
         const remote_name = argv.remote_name;
 
-        if (!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist!`);
+        if(!conf.remotes[remote_name]) {
+            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         conf.metadata.active_remote = argv.remote_name;
@@ -95,14 +95,14 @@ module.exports.commands.push({
 
 module.exports.commands.push({
     name: 'remove <remote_name>',
-    description: 'Remove a remote from the client',
+    description: 'Remove a remote from the client.',
     callback: (argv) => {
         const conf = configuration.get();
 
         const remote_name = argv.remote_name;
 
-        if (!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist!`);
+        if(!conf.remotes[remote_name]) {
+            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         delete conf.remotes[remote_name];
@@ -114,22 +114,22 @@ module.exports.commands.push({
 
 module.exports.commands.push({
     name: 'list',
-    description: 'List all configured remotes',
+    description: 'List all configured remotes.',
     callback: () => {
         const conf = configuration.get();
 
-        const active = conf.metadata.active_remote;
+        const active_remote = conf.metadata.active_remote;
 
         const data = _.map(conf.remotes, (info, name) => {
-            if (active === name) {
+            if(active_remote === name) {
                 name = `* ${name}`;
             }
 
             const url = csUtils.split_on_line_length(info.url, 98);
-            return [name, info.version || 'v1', url];
+            return[name, info.version || 'v1', url];
         });
 
-        if (data.length === 0) {
+        if(data.length === 0) {
             return console.error('There are currently no remotes configured!');
         }
 

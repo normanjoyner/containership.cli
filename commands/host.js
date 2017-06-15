@@ -1,8 +1,8 @@
 'use strict';
 
 const request = require('../lib/request');
-const utils = require('../lib/utils');
 const Table = require('../lib/table');
+const utils = require('../lib/utils');
 
 const _ = require('lodash');
 const chalk = require('chalk');
@@ -34,7 +34,7 @@ module.exports.commands.push({
             const data = Object.keys(response.body).map(key => {
                 const host = response.body[key];
 
-                return [
+                return[
                     host.id,
                     new Date(host.start_time).toString(),
                     `${host.mode} ${(host.praetor && host.praetor.leader) ? '*' : ''}`,
@@ -42,7 +42,7 @@ module.exports.commands.push({
                 ];
             });
 
-            if (data.length === 0) {
+            if(data.length === 0) {
                 return console.error('There are currently no hosts on the configured cluster!');
             }
 
@@ -61,7 +61,7 @@ module.exports.commands.push({
                 return console.error('Could not fetch host!');
             }
 
-            if (response.statusCode === 404) {
+            if(response.statusCode === 404) {
                 return console.error(`Host ${argv.host_name} could not be found!`);
             }
 
@@ -77,7 +77,7 @@ module.exports.commands.push({
             const host = response.body;
 
             const tags = _.map(flatten(host.tags), (v, k) => {
-                return `${chalk.gray(k)}: ${v}`;
+                return`${chalk.gray(k)}: ${v}`;
             });
 
             const data = [
@@ -89,19 +89,18 @@ module.exports.commands.push({
                 tags.join('\n')
             ];
 
-            if (host.mode === 'follower') {
+            if(host.mode === 'follower') {
                 headers.push(...[
                     'CPUS (USED / TOTAL)',
                     'MEMORY (USED / TOTAL)',
                     'CONTAINERS'
                 ]);
 
-                const overhead = 32;
                 let used_cpus = 0;
                 let used_memory = 0;
                 host.containers.forEach((container) => {
                     used_cpus += parseFloat(container.cpus);
-                    used_memory += parseFloat(container.memory) + overhead;
+                    used_memory += parseFloat(container.memory);
                 });
                 const total_cpus = parseFloat(host.cpus).toFixed(3);
                 const total_memory = parseInt(parseInt(host.memory) / (1024 * 1024));
@@ -132,12 +131,12 @@ module.exports.commands.push({
         options = parse_update_body(options);
 
         return request.get(`hosts/${argv.host_name}`, {}, (err, response) => {
-            if (err) {
+            if(err) {
                 process.stderr.write(`Could not update host ${argv.host_name}!`);
                 process.exit(1);
             }
 
-            if (response.statusCode === 404) {
+            if(response.statusCode === 404) {
                 return console.error(`Host ${argv.host_name} could not be found!`);
             }
 
@@ -173,7 +172,7 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.delete(`hosts/${argv.host_name}`, {}, (err, response) => {
             if(err) {
-                return console.error(`Could not disconnect  containership agent on host ${argv.host_name}!`);
+                return console.error(`Could not disconnect containership agent on host ${argv.host_name}!`);
             }
 
             if(response.statusCode === 404) {
@@ -191,7 +190,7 @@ module.exports.commands.push({
 
 function parse_update_body(options) {
     if(_.has(options, 'tag')) {
-        options.tags = utils.parse_tags(options.tag);
+        options.tags = utils.parse_key_value_args(options.tag);
         delete options.tag;
         delete options.t;
     }

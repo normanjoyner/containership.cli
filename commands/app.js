@@ -1,8 +1,8 @@
 'use strict';
 
 const request = require('../lib/request');
-const utils = require('../lib/utils');
 const Table = require('../lib/table');
+const utils = require('../lib/utils');
 
 const _ = require('lodash');
 const chalk = require('chalk');
@@ -72,7 +72,7 @@ module.exports = {
 
 module.exports.commands.push({
     name: 'list',
-    description: 'List applications on the cluster',
+    description: 'List applications on the cluster.',
     callback: () => {
         return request.get('applications', {}, (err, response) => {
             if(err) {
@@ -91,14 +91,14 @@ module.exports.commands.push({
             const data = Object.keys(response.body).map(key => {
                 const app = response.body[key];
                 const loaded_containers = app.containers.reduce((accumulator, container) => {
-                    if (container.status === 'loaded') {
+                    if(container.status === 'loaded') {
                         accumulator++;
                     }
 
                     return accumulator;
                 }, 0);
 
-                return [
+                return[
                     app.id,
                     app.image,
                     app.command,
@@ -108,7 +108,7 @@ module.exports.commands.push({
                 ];
             });
 
-            if (data.length === 0) {
+            if(data.length === 0) {
                 return console.error('You currently have no applications configured on the cluster!');
             }
 
@@ -120,14 +120,14 @@ module.exports.commands.push({
 
 module.exports.commands.push({
     name: 'show <app_name>',
-    description: 'Show detailed information for specified application',
+    description: 'Show detailed information for specified application.',
     callback: (argv) => {
         return request.get(`applications/${argv.app_name}`, {}, (err, response) => {
             if(err) {
                 return console.error('Could not fetch application!');
             }
 
-            if (response.statusCode === 404) {
+            if(response.statusCode === 404) {
                 return console.error(`Application ${argv.app_name} was not found!`);
             }
 
@@ -150,13 +150,13 @@ module.exports.commands.push({
             ];
 
             const env_vars = _.map(app.env_vars, (v, k) => {
-                return `${chalk.gray(k)}: ${v}`;
+                return`${chalk.gray(k)}: ${v}`;
             });
 
             const volumes = _.map(app.volumes, (vol) => {
-                let def = `${vol.host}:${vol.container}`;
+                let def = `${vol.host ? vol.host : chalk.gray('%CS_MANAGED%')}:${vol.container}`;
 
-                if (vol.propogation) {
+                if(vol.propogation) {
                     def = `${def}:${vol.propogation}`;
                 }
 
@@ -164,7 +164,7 @@ module.exports.commands.push({
             });
 
             const tags = _.map(flatten(app.tags), (v, k) => {
-                return `${chalk.gray(k)}: ${v}`;
+                return`${chalk.gray(k)}: ${v}`;
             });
 
             const data = [
@@ -202,7 +202,7 @@ module.exports.commands.push({
                 return console.error(`Could not create application ${argv.app_name}!`);
             }
 
-            if(response.statusCode != 200) {
+            if(response.statusCode !== 200) {
                 return console.error(response.body.error);
             }
 
@@ -224,7 +224,7 @@ module.exports.commands.push({
                 return console.error('Could not fetch application!');
             }
 
-            if (response.statusCode === 404) {
+            if(response.statusCode === 404) {
                 return console.error(`Application ${argv.app_name} was not found!`);
             }
 
@@ -252,11 +252,11 @@ module.exports.commands.push({
             _.forEach(options.volumes, (vol) => {
                 const existing = _.find(app.volumes, { container: vol.container });
 
-                if (existing) {
+                if(existing) {
                     existing.host = vol.host;
                     existing.container = vol.container;
                     existing.propogation = vol.propogation;
-                } else {
+                } else{
                     app.volumes.push(vol);
                 }
             });
@@ -360,7 +360,7 @@ module.exports.commands.push({
 
 function parse_update_body(options) {
     if(_.has(options, 'tag')) {
-        options.tags = utils.parse_tags(options.tag);
+        options.tags = utils.parse_key_value_args(options.tag);
         delete options.tag;
         delete options.t;
     }
@@ -372,7 +372,7 @@ function parse_update_body(options) {
     }
 
     if(_.has(options, 'env-var')) {
-        options.env_vars = utils.parse_env_vars(options['env-var']);
+        options.env_vars = utils.parse_key_value_args(options['env-var']);
         delete options['env-var'];
         delete options.e;
     }
