@@ -1,676 +1,391 @@
-var _ = require("lodash");
-var async = require("async");
-var flat = require("flat");
-var request = require([__dirname, "..", "lib", "request"].join("/"));
-var sprintf = require("sprintf-js").sprintf;
-var utils = require([__dirname, "..", "lib", "utils"].join("/"));
-var config = require([__dirname, "..", "lib", "config"].join("/")).config;
-var nomnom = require("nomnom")();
-var C2C = require("c2c");
-var url = require("url");
-var colors = require("colors");
+'use strict';
 
-var protocols = {
-    http: require("http"),
-    https: require("https")
-}
+const request = require('../lib/request');
+const Table = require('../lib/table');
+const utils = require('../lib/utils');
+
+const _ = require('lodash');
+const chalk = require('chalk');
+const flatten = require('flat');
+const unflatten = flatten.unflatten;
+
+const application_options = {
+    engine: {
+        description: 'Engine used to start application',
+        alias: 'x'
+    },
+    image: {
+        description: 'Application image',
+        alias: 'i'
+    },
+    'env-var': {
+        array: true,
+        description: 'Environment variable for application',
+        alias: 'e'
+    },
+    'network-mode': {
+        description: 'Application network mode',
+        alias: 'n'
+    },
+    'container-port': {
+        description: 'Port application must listen on',
+        alias: 'p'
+    },
+    command: {
+        description: 'Application start command',
+        alias: 's'
+    },
+    volume: {
+        description: 'Volume to bind-mount for application',
+        array: true,
+        alias: 'b'
+    },
+    tag: {
+        description: 'Tag to add to application',
+        array: true,
+        alias: 't'
+    },
+    cpus: {
+        description: 'CPUs allocated to application',
+        alias: 'c'
+    },
+    memory: {
+        description: 'Memory (mb) allocated to application',
+        alias: 'm'
+    },
+    privileged: {
+        description: 'Run application containers in privileged mode',
+        boolean: true
+    },
+    respawn: {
+        description: 'Respawn application containers when they die',
+        boolean: true,
+        default: true
+    }
+};
 
 module.exports = {
+    name: 'app',
+    description: 'List and manipulate applications running on the cluster specified by the client remote.',
+    commands: []
+};
 
-    nomnom: function(){
-        _.each(module.exports.commands, function(command, command_name){
-            nomnom.command(command_name).options(command.options).callback(command.callback)
+module.exports.commands.push({
+    name: 'list',
+    description: 'List applications on the cluster.',
+    callback: () => {
+        return request.get('applications', {}, (err, response) => {
+            if(err) {
+                return console.error('Could not fetch applications!');
+            }
+
+            const headers = [
+                'ID',
+                'IMAGE',
+                'COMMAND',
+                'CPUS',
+                'MEMORY',
+                'CONTAINERS'
+            ];
+
+            const data = Object.keys(response.body).map(key => {
+                const app = response.body[key];
+                const loaded_containers = app.containers.reduce((accumulator, container) => {
+                    if(container.status === 'loaded') {
+                        accumulator++;
+                    }
+
+                    return accumulator;
+                }, 0);
+
+                return[
+                    app.id,
+                    app.image,
+                    app.command,
+                    app.cpus,
+                    app.memory,
+                    `${loaded_containers || 0}/${app.containers.length}`
+                ];
+            });
+
+            if(data.length === 0) {
+                return console.error('You currently have no applications configured on the cluster!');
+            }
+
+            const output = Table.createTable(headers, data);
+            return console.info(output);
+        });
+    }
+});
+
+module.exports.commands.push({
+    name: 'show <app_name>',
+    description: 'Show detailed information for specified application.',
+    callback: (argv) => {
+        return request.get(`applications/${argv.app_name}`, {}, (err, response) => {
+            if(err) {
+                return console.error('Could not fetch application!');
+            }
+
+            if(response.statusCode === 404) {
+                return console.error(`Application ${argv.app_name} was not found!`);
+            }
+
+            const app = response.body;
+
+            const headers = [
+                'IMAGE',
+                'DISCOVERY_PORT',
+                'COMMAND',
+                'ENGINE',
+                'NETWORK_MODE',
+                'CONTAINER_PORT',
+                'CPUS',
+                'MEMORY',
+                'RESPAWN',
+                'PRIVLEGED',
+                'ENV_VARS',
+                'VOLUMES',
+                'TAGS'
+            ];
+
+            const env_vars = _.map(app.env_vars, (v, k) => {
+                return`${chalk.gray(k)}: ${v}`;
+            });
+
+            const volumes = _.map(app.volumes, (vol) => {
+                let def = `${vol.host ? vol.host : chalk.gray('%CS_MANAGED%')}:${vol.container}`;
+
+                if(vol.propogation) {
+                    def = `${def}:${vol.propogation}`;
+                }
+
+                return def;
+            });
+
+            const tags = _.map(flatten(app.tags), (v, k) => {
+                return`${chalk.gray(k)}: ${v}`;
+            });
+
+            const data = [
+                app.image,
+                app.discovery_port,
+                app.command,
+                app.engine,
+                app.network_mode,
+                app.container_port,
+                app.cpus,
+                app.memory,
+                app.respawn,
+                app.privileged,
+                env_vars.join('\n'),
+                volumes.join('\n'),
+                tags.join('\n')
+            ];
+
+            const output = Table.createVerticalTable(headers, [data]);
+            return console.info(output);
+        });
+    }
+});
+
+module.exports.commands.push({
+    name: 'create <app_name>',
+    description: 'Create application.',
+    options: application_options,
+    callback: (argv) => {
+        let options = _.omit(argv, ['h', 'help', '$0', '_']);
+        options = parse_update_body(options);
+
+        return request.post(`applications/${argv.app_name}`, {}, options, (err, response) => {
+            if(err) {
+                return console.error(`Could not create application ${argv.app_name}!`);
+            }
+
+            if(response.statusCode !== 200) {
+                return console.error(response.body.error);
+            }
+
+            return console.info(`Successfully created application ${argv.app_name}!`);
+        });
+    }
+});
+
+module.exports.commands.push({
+    name: 'edit <app_name>',
+    description: 'Edit application.',
+    options: application_options,
+    callback: (argv) => {
+        let options = _.omit(argv, ['h', 'help', '$0', '_']);
+        options = parse_update_body(options);
+
+        return request.get(`applications/${argv.app_name}`, {}, (err, response) => {
+            if(err) {
+                return console.error('Could not fetch application!');
+            }
+
+            if(response.statusCode === 404) {
+                return console.error(`Application ${argv.app_name} was not found!`);
+            }
+
+            const app = response.body;
+
+            // environment variables
+            app.env_vars = flatten(app.env_vars);
+            const to_remove_env = _.keys(flatten(_.pickBy(options.env_vars, val => val !== false && !val)));
+            to_remove_env.forEach((key) => {
+                delete app.env_vars[key];
+            });
+            const to_add_env = flatten(_.pickBy(options.env_vars, val => val));
+            options.env_vars = unflatten(_.merge(app.env_vars, to_add_env));
+
+            // tags
+            app.tags = flatten(app.tags);
+            const to_remove_tag = _.keys(flatten(_.pickBy(options.tags, val => val !== false && !val)));
+            to_remove_tag.forEach((key) => {
+                delete app.tags[key];
+            });
+            const to_add_tag = flatten(_.pickBy(options.tags, val => val));
+            options.tags = unflatten(_.merge(app.tags, to_add_tag));
+
+            // volumes
+            _.forEach(options.volumes, (vol) => {
+                const existing = _.find(app.volumes, { container: vol.container });
+
+                if(existing) {
+                    existing.host = vol.host;
+                    existing.container = vol.container;
+                    existing.propogation = vol.propogation;
+                } else{
+                    app.volumes.push(vol);
+                }
+            });
+            options.volumes = app.volumes;
+
+            return request.put(`applications/${argv.app_name}`, {}, options, (err, response) => {
+                if(err) {
+                    return console.error(`Could not update application ${argv.app_name}!`);
+                }
+
+                if(response.statusCode != 200) {
+                    return console.error(response.body.error);
+                }
+
+                return console.info(`Successfully updated application ${argv.app_name}!`);
+            });
         });
 
-        return nomnom;
-    },
+    }
+});
 
-    commands: {
-        "create-from-file": {
-            options: {
-                "docker-compose": {
-                    position: 1,
-                    help: "Path to Docker compose file",
-                    metavar: "DOCKER-COMPOSE",
-                    default: "./docker-compose.yml",
-                    required: true
-                },
-                "containership-compose": {
-                    position: 2,
-                    help: "Path to ContainerShip compose file",
-                    metavar: "CONTAINERSHIP-COMPOSE"
-                }
-            },
-
-            callback: function(options){
-                try{
-                    var c2c = new C2C({
-                       compose_path: options["docker-compose"],
-                       containership_path: options["containership-compose"]
-                    });
-                }
-                catch(err){
-                    process.stderr.write(err.message);
-                    process.exit(1);
-                }
-
-                c2c.convert(function(err, json){
-                    if(err){
-                        process.stderr.write(err.message);
-                        process.exit(1);
-                    }
-
-                    request.post("applications", {}, json, function(err, response){
-                        if(err){
-                            process.stderr.write("Could not create applications!");
-                            process.exit(1);
-                        }
-                        else if(response.statusCode != 201){
-                            process.stderr.write(response.body.error);
-                            process.exit(1);
-                        }
-                        else
-                            process.stdout.write(["Successfully created", _.keys(json).length, "applications!"].join(" "));
-                    });
-                });
+module.exports.commands.push({
+    name: 'delete <app_name>',
+    description: 'Delete application.',
+    callback: (argv) => {
+        return request.delete(`applications/${argv.app_name}`, {}, (err, response) => {
+            if(err) {
+                return console.error(`Could not delete application ${argv.app_name}!`);
             }
-        },
-        create: {
-            options: {
-                application: {
-                    position: 1,
-                    help: "Name of the application to create",
-                    metavar: "APPLICATION",
-                    required: true
-                },
 
-                engine: {
-                    help: "Engine used to start application",
-                    metavar: "ENGINE",
-                    choices: ["docker"],
-                    abbr: "x"
-                },
-
-                image: {
-                    help: "Application image",
-                    metavar: "IMAGE",
-                    required: true,
-                    abbr: "i"
-                },
-
-                "env-var": {
-                    list: true,
-                    help: "Environment variable for application",
-                    metavar: "ENV_VAR=VALUE",
-                    abbr: "e"
-                },
-
-                "network-mode": {
-                    help: "Application network mode",
-                    metavar: "NETWORK MODE",
-                    abbr: "n"
-                },
-
-                "container-port": {
-                    help: "Port application must listen on",
-                    metavar: "PORT",
-                    abbr: "p"
-                },
-
-                command: {
-                    help: "Application start command",
-                    metavar: "COMMAND",
-                    abbr: "s"
-                },
-
-                tag: {
-                    help: "Tag to add to application",
-                    metavar: "NAME=VALUE",
-                    list: true,
-                    abbr: "t"
-                },
-
-                volume: {
-                    help: "Volume to bind-mount for application",
-                    metavar: "HOST_PATH:CONTAINER_PATH",
-                    list: true,
-                    abbr: "b"
-                },
-
-                cpus: {
-                    help: "CPUs allocated to application",
-                    metavar: "CPUS",
-                    abbr: "c"
-                },
-
-                memory: {
-                    help: "Memory (mb) allocated to application",
-                    metavar: "MEMORY",
-                    abbr: "m"
-                },
-
-                privileged: {
-                    help: "Run application containers in privileged mode",
-                    metavar: "PRIVILEGED",
-                    choices: [true, false]
-                },
-
-                respawn: {
-                    help: "Respawn application containers when they die",
-                    metavar: "RESPAWN",
-                    choices: [true, false]
-                }
-            },
-
-            callback: function(options){
-                options = _.omit(options, ["0", "_"]);
-
-                if(_.has(options, "tag")){
-                    options.tags = utils.parse_tags(options.tag);
-                    delete options.tag;
-                }
-
-                if(_.has(options, "volume")){
-                    options.volumes = utils.parse_volumes(options.volume);
-                    delete options.volume;
-                }
-
-                if(_.has(options, "env-var")){
-                    options.env_vars = utils.parse_tags(options["env-var"]);
-                    delete options["env-var"];
-                }
-
-                if(_.has(options, "network-mode")){
-                    options.network_mode = options["network-mode"];
-                    delete options["network-mode"];
-                }
-
-                if(_.has(options, "container-port")){
-                    options.container_port = options["container-port"];
-                    delete options["container-port"];
-                }
-
-                if(_.has(options, "privileged"))
-                    options.privileged = options.privileged == "true";
-
-                if(_.has(options, "respawn"))
-                    options.respawn = options.respawn == "true";
-
-                request.post(["applications", options.application].join("/"), {}, options, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not create application ", options.application, "!"].join(""));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode != 201){
-                        process.stderr.write(response.body.error);
-                        process.exit(1);
-                    }
-                    else
-                        process.stdout.write(["Successfully created application ", options.application, "!"].join(""));
-                });
+            if(response.statusCode === 404) {
+                return console.error(`Application ${argv.app_name} does not exist!`);
             }
-        },
 
-        edit: {
-            options: {
-                application: {
-                    position: 1,
-                    help: "Name of the application to edit",
-                    metavar: "APPLICATION",
-                    required: true
-                },
-
-                engine: {
-                    help: "Engine used to start application",
-                    metavar: "ENGINE",
-                    choices: ["docker"],
-                    abbr: "x"
-                },
-
-                image: {
-                    help: "Application image",
-                    metavar: "IMAGE",
-                    abbr: "i"
-                },
-
-                "env-var": {
-                    list: true,
-                    help: "Environment variable for application",
-                    metavar: "ENV_VAR=VALUE",
-                    abbr: "e"
-                },
-
-                "network-mode": {
-                    help: "Application network mode",
-                    metavar: "NETWORK MODE",
-                    abbr: "n"
-                },
-
-                "container-port": {
-                    help: "Port application must listen on",
-                    metavar: "PORT",
-                    abbr: "p"
-                },
-
-                command: {
-                    help: "Application start command",
-                    metavar: "COMMAND",
-                    abbr: "s"
-                },
-
-                volume: {
-                    help: "Volume to bind-mount for application",
-                    metavar: "HOST_PATH:CONTAINER_PATH",
-                    list: true,
-                    abbr: "b"
-                },
-
-                tag: {
-                    help: "Tag to add to application",
-                    metavar: "NAME=VALUE",
-                    list: true,
-                    abbr: "t"
-                },
-
-                cpus: {
-                    help: "CPUs allocated to application",
-                    metavar: "CPUS",
-                    abbr: "c"
-                },
-
-                memory: {
-                    help: "Memory (mb) allocated to application",
-                    metavar: "MEMORY",
-                    abbr: "m"
-                },
-
-                privileged: {
-                    help: "Run application containers in privileged mode",
-                    metavar: "PRIVILEGED",
-                    choices: [true, false]
-                },
-
-                respawn: {
-                    help: "Respawn application containers when they die",
-                    metavar: "RESPAWN",
-                    choices: [true, false]
-                }
-
-            },
-
-            callback: function(options){
-                options = _.omit(options, ["0", "_"]);
-
-                if(_.has(options, "tag")){
-                    options.tags = utils.parse_tags(options.tag);
-                    delete options.tag;
-                }
-
-                if(_.has(options, "volume")){
-                    options.volumes = utils.parse_volumes(options.volume);
-                    delete options.volume;
-                }
-
-                if(_.has(options, "env-var")){
-                    options.env_vars = utils.parse_tags(options["env-var"]);
-                    delete options["env-var"];
-                }
-
-                request.put(["applications", options.application].join("/"), {}, options, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not update application ", options.application, "!"].join(""));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode != 200){
-                        process.stderr.write(response.body.error);
-                        process.exit(1);
-                    }
-                    else
-                        process.stdout.write(["Successfully updated application ", options.application, "!"].join(""));
-                });
+            if(response.statusCode !== 204) {
+                return console.error(`Could not delete application ${argv.app_name}!`);
             }
-        },
 
-        list: {
-            options: {},
+            return console.info(`Successfully deleted application ${argv.app_name}!`);
+        });
+    }
+});
 
-            callback: function(options){
-                request.get("applications", {}, function(err, response){
-                    if(err){
-                        process.stderr.write("Could not fetch applications!");
-                        process.exit(1);
-                    }
-
-                    console.log(sprintf("%-35s %-55s %-50s %-5s %-10s %-10s",
-                        "APPLICATION",
-                        "IMAGE",
-                        "COMMAND",
-                        "CPUS",
-                        "MEMORY",
-                        "CONTAINERS"
-                    ));
-
-                    _.each(response.body, function(application){
-                        var parsed_containers = _.groupBy(application.containers, function(container){
-                            return container.status;
-                        });
-
-                        var loaded_containers = parsed_containers.loaded || [];
-
-                        console.log(sprintf("%-35s %-55s %-50s %-5s %-10s %-10s",
-                            application.id,
-                            application.image,
-                            application.command,
-                            application.cpus,
-                            application.memory,
-                            [loaded_containers.length || 0, application.containers.length].join("/")
-                        ));
-                    });
-                });
-            }
-        },
-
-        show: {
-            options: {
-                application: {
-                    position: 1,
-                    help: "Name of the application to fetch",
-                    metavar: "APPLICATION",
-                    required: true
-                },
-            },
-
-            callback: function(options){
-                request.get(["applications", options.application].join("/"), {}, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not fetch application", options.application, "!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 404){
-                        process.stderr.write(["Application", options.application, "does not exist!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode != 200){
-                        process.stderr.write(response.body.error);
-                        process.exit(1);
-                    }
-                    else{
-                        console.log(sprintf("%-20s %-100s", "ENGINE", response.body.engine));
-                        console.log(sprintf("%-20s %-100s", "IMAGE", response.body.image));
-                        console.log(sprintf("%-20s %-100s", "COMMAND", response.body.command));
-                        console.log(sprintf("%-20s %-100s", "CPUS", response.body.cpus));
-                        console.log(sprintf("%-20s %-100s", "MEMORY", response.body.memory));
-                        console.log(sprintf("%-20s %-100s", "NETWORK MODE", response.body.network_mode));
-                        console.log(sprintf("%-20s %-100s", "DISCOVERY PORT", response.body.discovery_port));
-                        console.log(sprintf("%-20s %-100s", "CONTAINER PORT", response.body.container_port || ""));
-                        console.log();
-
-                        console.log(sprintf("%-20s %-50s %-50s", "ENV VARS", "NAME", "VALUE"));
-                        _.each(response.body.env_vars, function(val, key){
-                            console.log(sprintf("%-20s %-50s %-50s", "", key, val));
-                        });
-                        console.log();
-
-                        console.log(sprintf("%-20s %-50s %-50s", "TAGS", "NAME", "VALUE"));
-                        _.each(flat(response.body.tags), function(val, key){
-                            console.log(sprintf("%-20s %-50s %-50s", "", key, val));
-                        });
-                        console.log();
-
-                        console.log(sprintf("%-20s %-50s %-20s %-20s", "CONTAINERS", "ID", "HOST", "STATUS"));
-                        _.each(response.body.containers, function(container){
-                            console.log(sprintf("%-20s %-50s %-20s %-20s", "", container.id, container.host, container.status));
-                        });
-                    }
-                });
-            }
-        },
-
-        "scale-up": {
-            options: {
-                application: {
-                    position: 1,
-                    help: "Name of the application to scale up",
-                    metavar: "APPLICATION",
-                    required: true
-                },
-
-                count: {
-                    help: "Number of containers to add",
-                    metavar: "NUM CONTAINERS",
-                    default: 1
-                },
-
-                tag: {
-                    help: "Tag to add to new containers",
-                    metavar: "NAME=VALUE",
-                    list: true
-                }
-            },
-
-            callback: function(options){
-                if(!_.has(options, "count"))
-                    options.count = 1;
-
-                if(_.has(options, "tag")){
-                    options.tags = utils.parse_tags(options.tag);
-                    delete options.tag;
-                }
-                else
-                    options.tags = {};
-
-                request.post(["applications", options.application, "containers"].join("/"), {count: options.count}, {tags: options.tags}, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not scale up application ", options.application, "!"].join(""));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 404){
-                        process.stderr.write(["Application", options.application, "does not exist!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode != 201){
-                        process.stderr.write(response.body.error);
-                        process.exit(1);
-                    }
-                    else
-                        process.stdout.write(["Successfully scaled up application ", options.application, "!"].join(""));
-                });
-            }
-        },
-
-        "scale-down": {
-            options: {
-                application: {
-                    position: 1,
-                    help: "Name of the application to scale down",
-                    metavar: "APPLICATION",
-                    required: true
-                },
-
-                count: {
-                    help: "Number of containers to remove",
-                    metavar: "NUM CONTAINERS",
-                    default: 1
-                }
-            },
-
-            callback: function(options){
-                request.delete(["applications", options.application, "containers"].join("/"), {count: options.count}, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not scale down application ", options.application, "!"].join(""));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 404){
-                        process.stderr.write(["Application", options.application, "does not exist!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode != 204){
-                        process.stderr.write(response.body.error);
-                        process.exit(1);
-                    }
-                    else
-                        process.stdout.write(["Successfully scaled down application ", options.application, "!"].join(""));
-                });
-            }
-        },
-
-        delete: {
-            options: {
-                application: {
-                    position: 1,
-                    help: "Name of the application to delete",
-                    metavar: "APPLICATION",
-                    required: true
-                }
-            },
-
-            callback: function(options){
-                request.delete(["applications", options.application].join("/"), {}, function(err, response){
-                    if(err){
-                        process.stderr.write(["Could not delete application ", options.application, "!"].join(""));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 404){
-                        process.stderr.write(["Application", options.application, "does not exist!"].join(" "));
-                        process.exit(1);
-                    }
-                    else if(response.statusCode == 204)
-                        process.stdout.write(["Successfully deleted application ", options.application, "!"].join(""));
-                    else{
-                        process.stderr.write(["Could not delete application ", options.application, "!"].join(""));
-                        process.exit(1);
-                    }
-                });
-            }
-        },
-
-        logs: {
-            options: {
-                application: {
-                    position: 1,
-                    help: "Name of the application to fetch logs for",
-                    metavar: "APPLICATION",
-                    required: true
-                },
-                "container-id": {
-                    list: true,
-                    help: "container id to fetch logs for",
-                    metavar: "CONTAINER_ID"
-                },
-                all: {
-                    help: "fetch logs for all containers",
-                    flag: true,
-                    default: false
-                }
-            },
-
-            callback: function(options){
-                var local_request = {
-                    get: function(path, qs, fn){
-                        var options = {
-                            url: [config["api-url"], config["api-version"], path].join("/"),
-                            headers: config.headers || {},
-                            method: "GET",
-                            qs: qs,
-                            json: true,
-                            strictSSL: config.strict_ssl || true
-                        }
-
-                        async.waterfall(_.map(config.middleware || [], function(middleware){
-                            return function(fn){
-                                middleware(options, fn);
-                            }
-                        }), function(err){
-                            var req_opts = {
-                                host: url.parse(options.url).hostname,
-                                path: url.parse(options.url).path,
-                                method: options.method,
-                                headers: options.headers || {}
-                            }
-
-                            if(url.parse(options.url).port)
-                                req_opts.port = url.parse(options.url).port;
-
-                            req_opts.headers["Content-Type"] = "application/json"
-                            var protocol = url.parse(options.url).protocol;
-                            protocol = protocol.substring(0, protocol.length -1);
-
-                            var req = protocols[protocol].request(req_opts, function(response){
-                                return fn(undefined, response);
-                            });
-
-                            req.on("error", fn);
-
-                            if(req_opts.method == "POST")
-                                req.write(JSON.stringify(options.json));
-
-                            req.end();
-                        });
-                    }
-                }
-
-                var get_application = function(fn){
-                    request.get(["applications", options.application].join("/"), {}, function(err, response){
-                        if(err)
-                            return fn(new Error(["Could not fetch application ", options.application, "!"].join("")));
-                        else if(response.statusCode == 404)
-                            return fn(new Error(["Application", options.application, "does not exist!"].join(" ")));
-                        else if(response.statusCode == 200)
-                            return fn(undefined, _.pluck(response.body.containers, "id"));
-                    });
-                }
-
-                var fetch_logs = function(){
-                    _.each(options["container-id"], function(container_id){
-                        local_request.get(["logs", options.application, "containers", container_id].join("/"), {}, function(err, response){
-                            if(err || response.statusCode != 200)
-                                process.stderr.write(["Could not fetch logs for container ", container_id, " of application ", options.application, "!\n"].join(""));
-                            else{
-                              response.on("data", function(chunk){
-                                try{
-                                    json = JSON.parse(chunk);
-                                    if(json.type == "stdout")
-                                        console.log(["[", json.name, "]\t", json.data].join(""));
-                                    else if(json.type == "stderr")
-                                        console.log(["[", json.name, "]\t", json.data].join("").red);
-                                }
-                                catch(e){}
-                              });
-                            }
-                        });
-                    });
-                }
-
-                if(options.all){
-                    get_application(function(err, container_ids){
-                        if(err){
-                            process.stderr.write(err.message);
-                            process.exit(1);
-                        }
-                        else{
-                            options["container-id"] = container_ids;
-                            fetch_logs();
-                        }
-                    });
-                }
-                else if(!options["container-id"]){
-                    get_application(function(err, container_ids){
-                        if(err){
-                            process.stderr.write(err.message);
-                            process.exit(1);
-                        }
-                        else{
-                            console.log("Please pass any of the following container ids to fetch logs, or pass the --all flag to get logs for every container:");
-                            _.each(container_ids, function(container_id){
-                                console.log(container_id);
-                            });
-                        }
-                    });
-                }
-                else
-                    fetch_logs();
-            }
+module.exports.commands.push({
+    name: 'scale-up <app_name>',
+    description: 'Scale up application containers.',
+    options: {
+        count: {
+            description: 'Number of containers to scale application up by.',
+            alias: 'c',
+            default: 1
         }
+    },
+    callback: (argv) => {
+        return request.post(`applications/${argv.app_name}/containers`, { count: argv.count }, null, (err, response) => {
+            if(err) {
+                return console.error(`Could not scale up application ${argv.app_name}!`);
+            }
+
+            if(response.statusCode === 404) {
+                return console.error(`Application ${argv.app_name} does not exist!`);
+            }
+
+            if(response.statusCode !== 201) {
+                return console.error(response.body.error);
+            }
+
+            return console.info(`Successfully scaled up application ${argv.app_name}!`);
+        });
+    }
+});
+
+module.exports.commands.push({
+    name: 'scale-down <app_name>',
+    description: 'Scale down application containers.',
+    options: {
+        count: {
+            description: 'Number of containers to scale application down by.',
+            alias: 'c',
+            default: 1
+        }
+    },
+    callback: (argv) => {
+        return request.delete(`applications/${argv.app_name}/containers`, { count: argv.count }, (err, response) => {
+            if(err) {
+                return console.error(`Could not scale down application ${argv.app_name}!`);
+            }
+
+            if(response.statusCode === 404) {
+                return console.error(`Application ${argv.app_name} does not exist!`);
+            }
+
+            if(response.statusCode !== 204) {
+                return console.error(response.body.error);
+            }
+
+            return console.info(`Successfully scaled down application ${argv.app_name}!`);
+        });
+    }
+});
+
+function parse_update_body(options) {
+    if(_.has(options, 'tag')) {
+        options.tags = utils.parse_key_value_args(options.tag);
+        delete options.tag;
+        delete options.t;
     }
 
+    if(_.has(options, 'volume')) {
+        options.volumes = utils.parse_volumes(options.volume);
+        delete options.volume;
+        delete options.b;
+    }
+
+    if(_.has(options, 'env-var')) {
+        options.env_vars = utils.parse_key_value_args(options['env-var']);
+        delete options['env-var'];
+        delete options.e;
+    }
+
+    if(_.has(options, 'network-mode')) {
+        options.network_mode = options['network-mode'];
+        delete options['network-mode'];
+    }
+
+    if(_.has(options, 'container-port')) {
+        options.container_port = options['container-port'];
+        delete options['container-port'];
+    }
+
+    return options;
 }
