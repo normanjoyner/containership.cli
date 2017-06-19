@@ -60,9 +60,9 @@ function sync(silent) {
         return accumulator;
     }, {});
 
-    const new_config = configuration.get();
-    new_config.plugins = valid_plugins;
-    configuration.set(new_config);
+    const cli_config = configuration.get();
+    cli_config.plugins = valid_plugins;
+    configuration.set(cli_config);
 
     if(silent) {
         return;
@@ -70,7 +70,7 @@ function sync(silent) {
 
     const headers = ['NAME', 'VERSION', 'DESCRIPTION', 'PATH'];
 
-    const data = _.map(new_config.plugins, (plugin) => {
+    const data = _.map(cli_config.plugins, (plugin) => {
         return [
             plugin.name,
             plugin.version,

@@ -1,0 +1,127 @@
+# main links
+main:
+  - title: "Quick-Start Guide"
+    url: /docs/quick-start-guide/
+
+docs:
+  - title: Getting Started
+    children:
+      - title: "Quick-Start Guide"
+        url: /docs/quick-start-guide/
+      - title: "Installation"
+        url: /docs/installation/
+
+  - title: Commands
+    children:
+      - title: "app"
+        url: /docs/commands/app
+      - title: "app create"
+        url: /docs/commands/app-create
+      - title: "app delete"
+        url: /docs/commands/app-delete
+      - title: "app edit"
+        url: /docs/commands/app-edit
+      - title: "app list"
+        url: /docs/commands/app-list
+      - title: "app scale-down"
+        url: /docs/commands/app-scale-down
+      - title: "app scale-up"
+        url: /docs/commands/app-scale-up
+      - title: "app show"
+        url: /docs/commands/app-show
+      - title: "client-plugin"
+        url: /docs/commands/client-plugin
+      - title: "client-plugin add"
+        url: /docs/commands/client-plugin-add
+      - title: "client-plugin configure"
+        url: /docs/commands/client-plugin-configure
+      - title: "client-plugin list"
+        url: /docs/commands/client-plugin-list
+      - title: "client-plugin remove"
+        url: /docs/commands/client-plugin-remove
+      - title: "client-plugin search"
+        url: /docs/commands/client-plugin-search
+      - title: "client-plugin sync"
+        url: /docs/commands/client-plugin-sync
+      - title: "client-plugin upgrade"
+        url: /docs/commands/client-plugin-upgrade
+      - title: "container"
+        url: /docs/commands/container
+      - title: "container list"
+        url: /docs/commands/container-list
+      - title: "container logs"
+        url: /docs/commands/container-logs
+      - title: "container remove"
+        url: /docs/commands/container-remove
+      - title: "container show"
+        url: /docs/commands/container-show
+      - title: "host"
+        url: /docs/commands/host
+      - title: "host disconnect"
+        url: /docs/commands/host-disconnect
+      - title: "host edit"
+        url: /docs/commands/host-edit
+      - title: "host list"
+        url: /docs/commands/host-list
+      - title: "host show"
+        url: /docs/commands/host-show
+      - title: "info"
+        url: /docs/commands/info
+      - title: "remote"
+        url: /docs/commands/remote
+      - title: "remote add"
+        url: /docs/commands/remote-add
+      - title: "remote list"
+        url: /docs/commands/remote-list
+      - title: "remote remove"
+        url: /docs/commands/remote-remove
+      - title: "remote set-active"
+        url: /docs/commands/remote-set-active
+      - title: "remote set-url"
+        url: /docs/commands/remote-set-url
+      - title: "remote set-version"
+        url: /docs/commands/remote-set-version
+
+  - title: Plugins
+    children:
+      - title: "Overview"
+        url: /docs/plugins/overview
+      - title: "Creating a plugin"
+        url: /docs/plugins/creating
+
+  - title: Containership Cloud Plugin
+    children:
+      - title: "Overview"
+        url: /docs/plugins/cloud/overview
+      - title: "cloud account"
+        url: /docs/plugins/cloud/cloud-account
+      - title: "cloud account edit"
+        url: /docs/plugins/cloud/cloud-account-edit
+      - title: "cloud account info"
+        url: /docs/plugins/cloud/cloud-account-info
+      - title: "cloud account login"
+        url: /docs/plugins/cloud/cloud-account-login
+      - title: "cloud account logout"
+        url: /docs/plugins/cloud/cloud-account-logout
+      - title: "cloud cluster"
+        url: /docs/plugins/cloud/cloud-cluster
+      - title: "cloud cluster delete"
+        url: /docs/plugins/cloud/cloud-cluster-delete
+      - title: "cloud cluster edit"
+        url: /docs/plugins/cloud/cloud-cluster-edit
+      - title: "cloud cluster list"
+        url: /docs/plugins/cloud/cloud-cluster-list
+      - title: "cloud cluster show"
+        url: /docs/plugins/cloud/cloud-cluster-show
+      - title: "cloud cluster use"
+        url: /docs/plugins/cloud/cloud-cluster-use
+      - title: "cloud org"
+        url: /docs/plugins/cloud/cloud-org
+      - title: "cloud org edit"
+        url: /docs/plugins/cloud/cloud-org-edit
+      - title: "cloud org list"
+        url: /docs/plugins/cloud/cloud-org-list
+      - title: "cloud org show"
+        url: /docs/plugins/cloud/cloud-org-show
+      - title: "cloud org use"
+        url: /docs/plugins/cloud/cloud-org-use
