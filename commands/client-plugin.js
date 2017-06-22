@@ -261,7 +261,7 @@ function modify_plugin(options) {
 }
 
 module.exports.commands.push({
-    name: 'add <plugin>',
+    name: 'add <plugins...>',
     description: 'Add plugins.',
     callback: (argv) => {
         return getOfficialContainershipPlugins((err, official_plugins) => {
@@ -269,17 +269,19 @@ module.exports.commands.push({
                 return console.error(err);
             }
 
-            return modify_plugin({
-                plugin_name: argv.plugin,
-                official_plugins: official_plugins,
-                type: 'add'
+            return _.forEach(argv.plugins, (plugin) => {
+                return modify_plugin({
+                    plugin_name: plugin,
+                    official_plugins: official_plugins,
+                    type: 'add'
+                });
             });
         });
     }
 });
 
 module.exports.commands.push({
-    name: 'upgrade <plugin>',
+    name: 'upgrade <plugins...>',
     description: 'Upgrade plugins.',
     callback: (argv) => {
         return getOfficialContainershipPlugins((err, official_plugins) => {
@@ -287,17 +289,19 @@ module.exports.commands.push({
                 return console.error(err);
             }
 
-            return modify_plugin({
-                plugin_name: argv.plugin,
-                official_plugins: official_plugins,
-                type: 'upgrade'
+            return _.forEach(argv.plugins, (plugin) => {
+                return modify_plugin({
+                    plugin_name: plugin,
+                    official_plugins: official_plugins,
+                    type: 'upgrade'
+                });
             });
         });
     }
 });
 
 module.exports.commands.push({
-    name: 'remove <plugin>',
+    name: 'remove <plugins...>',
     description: 'Removes a plugin.',
     callback: (argv) => {
         return getOfficialContainershipPlugins((err, official_plugins) => {
@@ -305,10 +309,12 @@ module.exports.commands.push({
                 return console.error(err);
             }
 
-            return modify_plugin({
-                plugin_name: argv.plugin,
-                official_plugins: official_plugins,
-                type: 'remove'
+            return _.forEach(argv.plugins, (plugin) => {
+                return modify_plugin({
+                    plugin_name: plugin,
+                    official_plugins: official_plugins,
+                    type: 'remove'
+                });
             });
         });
     }
