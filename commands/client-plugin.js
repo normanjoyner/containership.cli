@@ -6,10 +6,11 @@ const Table = require('../lib/table');
 
 const _ = require('lodash');
 const fs = require('fs');
+const mkdirp = require('mkdirp');
 const npm = require('npm');
 const request = require('request');
 
-const PLUGIN_DIR = `${process.env.HOME}/.containership/plugins`;
+const PLUGIN_DIR = process.env.CS_PLUGIN_DIR || `${process.env.HOME}/.containership/plugins`;
 
 module.exports = {
     name: 'client-plugin',
@@ -18,7 +19,8 @@ module.exports = {
 };
 
 function sync(silent) {
-    const potential_plugins = fs.readdirSync(`${PLUGIN_DIR}/node_modules`);
+    mkdirp.sync(`${PLUGIN_DIR}/lib/node_modules`);
+    const potential_plugins = fs.readdirSync(`${PLUGIN_DIR}/lib/node_modules`);
     const valid_plugins = {};
 
     _.forEach(potential_plugins, (plugin_name) => {
@@ -222,6 +224,7 @@ function modify_plugin(options) {
     return npm.load({
         loglevel: 'silent',
         force: true,
+        global: true,
         prefix: PLUGIN_DIR,
         'unsafe-perm': true
     }, () => {
