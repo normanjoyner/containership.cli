@@ -230,7 +230,8 @@ function modify_plugin(options) {
     }, () => {
         return npm.commands.ls([ module_search ], { json: true }, (err, data) => {
             if(err) {
-                return console.error('Failed to add plugin!');
+                console.error('Failed to add plugin!');
+                process.exit(1);
             }
 
             if(isAdd && _.keys(data.dependencies).indexOf(module_search) !== -1) {
@@ -246,7 +247,8 @@ function modify_plugin(options) {
             return npm.commands[npm_cmd]([isRemove ? module_search : source], (err) => {
                 if(err) {
                     console.error(`Failed to ${options.type} plugin!`);
-                    return console.error(err.message);
+                    console.error(err.message);
+                    process.exit(1);
                 }
 
                 sync(true);
