@@ -5,10 +5,14 @@ const csUtils = require('../lib/utils');
 const Table = require('../lib/table');
 
 const _ = require('lodash');
+const async = require('async');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 const npm = require('npm');
 const request = require('request');
+const rimraf = require('rimraf');
+const tar = require('tar-fs');
+const zlib  = require('zlib');
 
 const PLUGIN_DIR = process.env.CS_PLUGIN_DIR || `${process.env.HOME}/.containership/plugins`;
 
@@ -19,34 +23,38 @@ module.exports = {
 };
 
 function sync(silent) {
-    mkdirp.sync(`${PLUGIN_DIR}/lib/node_modules`);
-    const potential_plugins = fs.readdirSync(`${PLUGIN_DIR}/lib/node_modules`);
-    const valid_plugins = {};
+    mkdirp.sync(PLUGIN_DIR);
+    const potential_plugins = fs.readdirSync(`${PLUGIN_DIR}`).map(name => `${PLUGIN_DIR}/${name}`);
 
-    _.forEach(potential_plugins, (plugin_name) => {
-        if (!plugin_name.startsWith('containership.plugin.')) {
-            return;
+    const valid_plugins = _.reduce(potential_plugins, (accumulator, plugin_path) => {
+        if(!fs.existsSync(`${plugin_path}/package.json`)) {
+            console.info(`Not a valid containership plugin: ${plugin_path}`);
+            return accumulator;
         }
 
-        const plugin_path = `${PLUGIN_DIR}/node_modules/${plugin_name}`;
+        delete require.cache[require.resolve(plugin_path)];
+        const req = require(plugin_path);
+        const plugin = typeof req === 'function' ? new req().cli : req && req.cli;
 
-        let req;
-
-        try{
-            delete require.cache[require.resolve(plugin_path)];
-            req = require(plugin_path);
-        } catch(e) {
-            if(e) { /* ignore */ }
+        // is not a CS plugin, needs to export
+        if(!plugin) {
+            console.info(`Not a valid containership plugin: ${plugin_path}`);
+            return accumulator;
         }
 
-        let plugin = typeof req === 'function' ? new req().cli : req && req.cli;
+        const pkg = require(`${plugin_path}/package.json`);
+        console.log(pkg.name);
+        console.log(pkg.version);
 
-        if(plugin) {
-            valid_plugins[plugin_name.replace('containership.plugin.', '')] = {
-                path: plugin_path
-            };
+        accumulator[pkg.name] = {
+            name: pkg.name,
+            version: pkg.version,
+            path: plugin_path,
+            description: plugin.description
         }
-    });
+
+        return accumulator;
+    }, {});
 
     const new_config = configuration.get();
     new_config.plugins = valid_plugins;
@@ -59,16 +67,11 @@ function sync(silent) {
     const headers = ['NAME', 'VERSION', 'DESCRIPTION', 'PATH'];
 
     const data = _.map(new_config.plugins, (plugin) => {
-        const plugin_path = plugin.path;
-
-        plugin = require(plugin_path);
-        plugin = typeof plugin === 'function' ? new plugin().cli : plugin && plugin.cli;
-
-        return[
+        return [
             plugin.name,
-            require(`${plugin_path}/package.json`).version,
+            plugin.version,
             csUtils.split_on_line_length(plugin.description, 48),
-            csUtils.split_on_line_length(plugin_path, 48)
+            csUtils.split_on_line_length(plugin.path, 48)
         ];
     });
 
@@ -95,21 +98,17 @@ module.exports.commands.push({
     name: 'list',
     description: 'List installed plugins.',
     callback: () => {
+        sync(true);
         const conf = configuration.get();
 
         const headers = ['NAME', 'VERSION', 'DESCRIPTION', 'PATH'];
 
         const data = _.map(conf.plugins, (plugin) => {
-            const plugin_path = plugin.path;
-
-            plugin = require(plugin_path);
-            plugin = typeof plugin === 'function' ? new plugin().cli : plugin && plugin.cli;
-
-            return[
+            return [
                 plugin.name,
-                require(`${plugin_path}/package.json`).version,
+                plugin.version,
                 csUtils.split_on_line_length(plugin.description, 48),
-                csUtils.split_on_line_length(plugin_path, 48)
+                csUtils.split_on_line_length(plugin.path, 48)
             ];
         });
 
@@ -132,7 +131,7 @@ module.exports.commands.push({
         const undesiredKeys = ['_', 'help', 'h', '$0', 'plugin'];
         const config = _.omit(argv, undesiredKeys);
 
-        fs.writeFile(`${PLUGIN_DIR}/${argv.plugin}.json`, JSON.stringify(config), (err) => {
+        return fs.writeFile(`${PLUGIN_DIR}/${argv.plugin}.json`, JSON.stringify(config), (err) => {
             if(err) {
                 return console.error(err.message);
             }
@@ -141,6 +140,43 @@ module.exports.commands.push({
         });
     }
 });
+
+const GITHUB_REGEX = /github:\/\/(.+)\/([^#]+)#?(.+)?/;
+const NPM_REGEX = /(@[^\/]+)?\/?([^@]+)@?(.+)?/;
+
+function parsePluginInput(input) {
+    if(!input) {
+        throw new Error('Must provide plugin input');
+    }
+
+    if(input.indexOf('github://') === 0) {
+        const match = input.match(GITHUB_REGEX);
+
+        if(!match) {
+            throw new Error(`Invalid github format, expect: ${GITHUB_REGEX}`);
+        }
+
+        return {
+            type: 'github',
+            organization: match[1],
+            name: match[2],
+            version: match[3] || 'master'
+        };
+    }
+
+    const match = input.match(NPM_REGEX);
+
+    if(!match) {
+        throw new Error(`Invalid npm format, expect: ${NPM_REGEX}`);
+    }
+
+    return {
+        type: 'npm',
+        organization: match[1],
+        name: match[2],
+        version: match[3] || 'latest'
+    };
+}
 
 function getOfficialContainershipPlugins(callback) {
     return request({ url: 'https://plugins.containership.io', json: true }, (err, response) => {
@@ -188,78 +224,108 @@ module.exports.commands.push({
     }
 });
 
-function modify_plugin(options) {
-    let isUpgrade = options.type === 'upgrade';
-    let isRemove = options.type === 'remove';
-    let isAdd = options.type === 'add';
-    let official_plugins = options.official_plugins || [];
-    let plugin_name = options.plugin_name;
-    plugin_name = plugin_name.split('@');
-
-    let plugin = plugin_name[0];
-    let version = plugin_name[1];
-
-    const official_plugin = official_plugins[plugin];
-
-    let source = official_plugin ? official_plugin.source : plugin;
-    plugin = source;
-
-    if(version) {
-        source = `${source}@${version}`;
+function modify_plugins(type, plugins, cb) {
+    if(type !== 'add' && type !== 'upgrade') {
+        throw Error('Type must be one of `add` or `upgrade` in the `modify_plugins` call');
     }
 
-    let branchIndex = plugin.indexOf('#');
-    let orgIndex = plugin.charAt === '@' ? -1 : plugin.indexOf('/') + 1;
+    const isAdd = type === 'add';
+    const isUpgrade = type === 'upgrade';
 
-    if(branchIndex === -1) {
-        branchIndex = plugin.length;
-    }
-
-    if(orgIndex === -1) {
-        orgIndex = 0;
-    }
-
-    const module_search = plugin.substring(orgIndex, branchIndex);
-
-    return npm.load({
-        loglevel: 'silent',
-        force: true,
-        global: true,
-        prefix: PLUGIN_DIR,
-        'unsafe-perm': true
-    }, () => {
-        return npm.commands.ls([ module_search ], { json: true }, (err, data) => {
-            if(err) {
-                console.error('Failed to add plugin!');
-                process.exit(1);
-            }
-
-            if(isAdd && _.keys(data.dependencies).indexOf(module_search) !== -1) {
-                return console.error(`Plugin ${module_search} is already installed, please see 'csctl client-plugin upgrade' for upgrading existing plugins.`);
-            }
-
-            if((isRemove || isUpgrade) && _.keys(data.dependencies).indexOf(module_search) === -1) {
-                return console.error(`Plugin ${module_search} is not already installed, please see 'csctl client-plugin add' for installing new plugins.`);
-            }
-
-            const npm_cmd = (isAdd || isUpgrade) ? 'install' : 'remove';
-
-            return npm.commands[npm_cmd]([isRemove ? module_search : source], (err) => {
+    return async.waterfall([
+        (cb) => npm.load({}, () => cb()),
+        (cb) => {
+            return getOfficialContainershipPlugins((err, plugins) => {
+                // continue attempting to add plugins even if official plugin mapping is not reached
                 if(err) {
-                    console.error(`Failed to ${options.type} plugin!`);
-                    console.error(err.message);
-                    process.exit(1);
+                    console.warn(err);
                 }
 
-                sync(true);
+                return cb(null, plugins || null);
+            });
+        },
+        (official_plugins, cb) => {
+            return async.map(plugins, (plugin, cb) => {
+                plugin = parsePluginInput(official_plugins[plugin] ? official_plugins[plugin].source : plugin);
 
-                let msg = `Succesfully removed the ${plugin} plugin!`;
-
-                if(isAdd || isUpgrade) {
-                    msg = `Succesfully ${options.type}d the ${plugin} plugin!`;
+                if(plugin.type === 'github') {
+                    plugin.tarball = `https://api.github.com/repos/${plugin.organization}/${plugin.name}/tarball/${plugin.version}`;
+                    return cb(null, plugin);
                 }
 
-                return console.info(msg);
+                if(plugin.type === 'npm') {
+                    let name = `${plugin.name}@${plugin.version}`;
+
+                    if(plugin.organization) {
+                        name = `${plugin.organization}/${name}`;
+                    }
+
+                    return npm.commands.view([name, 'dist.tarball'], (err, data) => {
+                        if(err) {
+                            return cb(err);
+                        }
+
+                        plugin.tarball = _.values(data)[0]['dist.tarball'];
+                        return cb(null, plugin);
+                    });
+                }
+
+                return cb('Invalid plugin type: ', plugin.type);
+            }, cb);
+        }
+    ], (err, plugins) => {
+        if(err) {
+            throw new Error(err);
+        }
+
+        return async.eachSeries(plugins, (plugin, cb) => {
+            const plugin_path = `${PLUGIN_DIR}/${plugin.name}`;
+
+            if(isAdd && fs.existsSync(plugin_path)) {
+                console.warn(`Skipping install of ${plugin_path}, directory already exists. Use 'client-plugin upgrade' to update an existing plugin.`);
+                return cb();
+            }
+
+            if(isUpgrade && !fs.existsSync(plugin_path)) {
+                console.warn(`Skipping install of ${plugin_path}, directory does not exist. Use 'client-plugin add' to add an new plugin.`);
+                return cb();
+            }
+
+
+            // remove plugin before upgrade to new version
+            if(isUpgrade) {
+                rimraf.sync(plugin_path);
+            }
+
+            const extract_pipe = request({
+                headers: {
+                    'User-Agent': 'cli.containership.io'
+                },
+                url: plugin.tarball
+            }).pipe(zlib.createGunzip()).pipe(tar.extract(plugin_path, {
+                map: function(header) {
+                    // strip the wrapper directory off of extraction
+                    header.name = header.name.substring(header.name.indexOf('/'));
+                    return header;
+                }
+            }));;
+
+            function npm_install() {
+                return npm.commands.install([plugin_path], (err) => {
+                    if(err) {
+                        return cb(err);
+                    }
+
+                    console.info('Succesfully installed!');
+                    sync(true);
+                    return cb();
+                });
+            }
+
+            extract_pipe.on('finish', npm_install);
+            extract_pipe.on('error', (err) => {
+                console.error(err);
+                return cb(err);
             });
         });
     });
@@ -269,18 +335,12 @@ module.exports.commands.push({
     name: 'add <plugins...>',
     description: 'Add plugins.',
     callback: (argv) => {
-        return getOfficialContainershipPlugins((err, official_plugins) => {
+        return modify_plugins('add', argv.plugins, (err) => {
             if(err) {
                 return console.error(err);
             }
 
-            return _.forEach(argv.plugins, (plugin) => {
-                return modify_plugin({
-                    plugin_name: plugin,
-                    official_plugins: official_plugins,
-                    type: 'add'
-                });
-            });
+            return console.info('Succesfully added all plugins!');
         });
     }
 });
@@ -289,18 +349,12 @@ module.exports.commands.push({
     name: 'upgrade <plugins...>',
     description: 'Upgrade plugins.',
     callback: (argv) => {
-        return getOfficialContainershipPlugins((err, official_plugins) => {
+        return modify_plugins('upgrade', argv.plugins, (err) => {
             if(err) {
                 return console.error(err);
             }
 
-            return _.forEach(argv.plugins, (plugin) => {
-                return modify_plugin({
-                    plugin_name: plugin,
-                    official_plugins: official_plugins,
-                    type: 'upgrade'
-                });
-            });
+            return console.info('Succesfully upgraded all plugins!');
         });
     }
 });
@@ -309,18 +363,32 @@ module.exports.commands.push({
     name: 'remove <plugins...>',
     description: 'Removes a plugin.',
     callback: (argv) => {
+        sync(true);
+
         return getOfficialContainershipPlugins((err, official_plugins) => {
             if(err) {
                 return console.error(err);
             }
 
-            return _.forEach(argv.plugins, (plugin) => {
-                return modify_plugin({
-                    plugin_name: plugin,
-                    official_plugins: official_plugins,
-                    type: 'remove'
-                });
+            const configured_plugins = configuration.get().plugins;
+
+            return _.forEach(argv.plugins, (plugin_name) => {
+                plugin_name = official_plugins[plugin_name] ? official_plugins[plugin_name].source : plugin_name;
+                const plugin = configured_plugins[plugin_name];
+
+                if(!plugin) {
+                    console.warn(`The plugin is not configured, skipping: ${plugin_name}`);
+                    return true;
+                }
+
+                if(plugin.path.indexOf(PLUGIN_DIR)) {
+                    return console.warn(`Plugin path has been modified and is not consistent with the base plugin directory... not removing: ${plugin.path}`);
+                }
+
+                return rimraf.sync(configured_plugins[plugin_name].path);
             });
+
+            sync(true);
         });
     }
 });
