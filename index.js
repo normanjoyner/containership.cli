@@ -1,6 +1,7 @@
 'use strict';
 
 const configuration = require('./lib/configuration');
+const logger = require('./lib/logger');
 
 const _ = require('lodash');
 const fs = require('fs');
@@ -21,10 +22,10 @@ class ContainershipCli {
         this.plugin_commands = _.chain(conf.plugins)
             .map((plugin, name) => {
                 let req;
-                try{
+                try {
                     req = require(plugin.path);
                 } catch(e) {
-                    console.warn(`Plugin ${name} no longer exists in plugin directory...removing from config.`);
+                    logger.warn(`Plugin ${name} no longer exists in plugin directory...removing from config.`);
                     delete conf.plugins[name];
                     return;
                 }
@@ -66,7 +67,7 @@ class ContainershipCli {
         this.commands.forEach(cmd => this.parseCommand(yargs, cmd));
         this.plugin_commands.forEach(cmd => this.parseCommand(yargs, cmd));
 
-        console.info(`${yargs.argv['$0']} ${yargs.argv._.join(' ')}`);
+        logger.info(`${yargs.argv['$0']} ${yargs.argv._.join(' ')}`);
         return yargs.showHelp('log');
     }
 

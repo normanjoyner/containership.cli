@@ -1,5 +1,6 @@
 'use strict';
 
+const logger = require('../lib/logger');
 const request = require('../lib/request');
 const Table = require('../lib/table');
 const utils = require('../lib/utils');
@@ -21,7 +22,7 @@ module.exports.commands.push({
     callback: () => {
         return request.get('hosts', {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch hosts!');
+                return logger.error('Could not fetch hosts!');
             }
 
             const headers = [
@@ -34,7 +35,7 @@ module.exports.commands.push({
             const data = Object.keys(response.body).map(key => {
                 const host = response.body[key];
 
-                return[
+                return [
                     host.id,
                     new Date(host.start_time).toString(),
                     `${host.mode} ${(host.praetor && host.praetor.leader) ? '*' : ''}`,
@@ -43,11 +44,11 @@ module.exports.commands.push({
             });
 
             if(data.length === 0) {
-                return console.error('There are currently no hosts on the configured cluster!');
+                return logger.error('There are currently no hosts on the configured cluster!');
             }
 
             const output = Table.createTable(headers, data);
-            return console.info(output);
+            return logger.info(output);
         });
     }
 });
@@ -58,11 +59,11 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.get(`hosts/${argv.host_name}`, {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch host!');
+                return logger.error('Could not fetch host!');
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Host ${argv.host_name} could not be found!`);
+                return logger.error(`Host ${argv.host_name} could not be found!`);
             }
 
             const headers = [
@@ -77,7 +78,7 @@ module.exports.commands.push({
             const host = response.body;
 
             const tags = _.map(flatten(host.tags), (v, k) => {
-                return`${chalk.gray(k)}: ${v}`;
+                return `${chalk.gray(k)}: ${v}`;
             });
 
             const data = [
@@ -111,7 +112,7 @@ module.exports.commands.push({
             }
 
             const output = Table.createVerticalTable(headers, [data]);
-            return console.info(output);
+            return logger.info(output);
         });
     }
 });
@@ -137,7 +138,7 @@ module.exports.commands.push({
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Host ${argv.host_name} could not be found!`);
+                return logger.error(`Host ${argv.host_name} could not be found!`);
             }
 
             const host = response.body;
@@ -153,14 +154,14 @@ module.exports.commands.push({
 
             return request.put(`hosts/${argv.host_name}`, {}, options, (err, response) => {
                 if(err) {
-                    return console.error(`Could not update host ${argv.host_name}!`);
+                    return logger.error(`Could not update host ${argv.host_name}!`);
                 }
 
                 if(response.statusCode !== 200) {
-                    return console.error(response.body.error);
+                    return logger.error(response.body.error);
                 }
 
-                return console.info(`Successfully updated host ${argv.host_name}!`);
+                return logger.info(`Successfully updated host ${argv.host_name}!`);
             });
         });
     }
@@ -172,18 +173,18 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.delete(`hosts/${argv.host_name}`, {}, (err, response) => {
             if(err) {
-                return console.error(`Could not disconnect containership agent on host ${argv.host_name}!`);
+                return logger.error(`Could not disconnect containership agent on host ${argv.host_name}!`);
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Host ${argv.host_name} does not exist!`);
+                return logger.error(`Host ${argv.host_name} does not exist!`);
             }
 
             if(response.statusCode !== 204) {
-                return console.error(`Could not disconnect containership agent on host ${argv.host_name}!`);
+                return logger.error(`Could not disconnect containership agent on host ${argv.host_name}!`);
             }
 
-            return console.info(`Successfully disconnected containership agent on host ${argv.host_name}!`);
+            return logger.info(`Successfully disconnected containership agent on host ${argv.host_name}!`);
         });
     }
 });

@@ -2,6 +2,7 @@
 
 const configuration = require('../lib/configuration');
 const csUtils = require('../lib/utils');
+const logger = require('../lib/logger');
 const Table = require('../lib/table');
 
 const _ = require('lodash');
@@ -23,7 +24,7 @@ module.exports.commands.push({
         const remote_name = argv.remote_name;
 
         if(conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} already exists!`);
+            return logger.error(`Remote ${remote_name} already exists!`);
         }
 
         conf.remotes[remote_name] = {
@@ -32,7 +33,7 @@ module.exports.commands.push({
         };
         configuration.set(conf);
 
-        return console.info('Succesfully created remote!');
+        return logger.info('Succesfully created remote!');
     }
 });
 
@@ -45,13 +46,13 @@ module.exports.commands.push({
         const remote_name = argv.remote_name;
 
         if(!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
+            return logger.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         conf.remotes[remote_name].url = argv.remote_url;
         configuration.set(conf);
 
-        return console.info('Succesfully set remote url!');
+        return logger.info('Succesfully set remote url!');
     }
 });
 
@@ -64,13 +65,13 @@ module.exports.commands.push({
         const remote_name = argv.remote_name;
 
         if(!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
+            return logger.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         conf.remotes[remote_name].version = argv.remote_version;
         configuration.set(conf);
 
-        return console.info('Succesfully set remote version!');
+        return logger.info('Succesfully set remote version!');
     }
 });
 
@@ -83,13 +84,13 @@ module.exports.commands.push({
         const remote_name = argv.remote_name;
 
         if(!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
+            return logger.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         conf.metadata.active_remote = argv.remote_name;
         configuration.set(conf);
 
-        return console.info(`Succesfully set ${remote_name} as active remote!`);
+        return logger.info(`Succesfully set ${remote_name} as active remote!`);
     }
 });
 
@@ -102,13 +103,13 @@ module.exports.commands.push({
         const remote_name = argv.remote_name;
 
         if(!conf.remotes[remote_name]) {
-            return console.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
+            return logger.error(`Remote ${remote_name} does not exist! See 'csctl remote add <remote_name> <remote_url>' for more info.`);
         }
 
         delete conf.remotes[remote_name];
         configuration.set(conf);
 
-        return console.info(`Succesfully removed ${remote_name} remote!`);
+        return logger.info(`Succesfully removed ${remote_name} remote!`);
     }
 });
 
@@ -126,11 +127,11 @@ module.exports.commands.push({
             }
 
             const url = csUtils.split_on_line_length(info.url, 98);
-            return[name, info.version || 'v1', url];
+            return [name, info.version || 'v1', url];
         });
 
         if(data.length === 0) {
-            return console.error('There are currently no remotes configured!');
+            return logger.error('There are currently no remotes configured!');
         }
 
         const headers = ['NAME', 'VERSION', 'URL'];
@@ -138,6 +139,6 @@ module.exports.commands.push({
             colWidths: [null, null, 100]
         });
 
-        console.info(output);
+        logger.info(output);
     }
 });

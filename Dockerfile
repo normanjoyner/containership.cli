@@ -1,17 +1,12 @@
-####
-# Dockerfile for ContainerShip Cli
-####
-
-FROM library/node:6.11.0
+FROM mhart/alpine-node:8.2
 
 MAINTAINER ContainerShip Developers <developers@containership.io>
 
-RUN apt-get install git -y
-RUN npm install yarn -g
+RUN apk update && apk add git
 
-RUN mkdir /app
-ADD . /app
 WORKDIR /app
-RUN yarn install --ignore-engines --pure-lockfile
+ADD . /app
+
+RUN npm install
 
 ENTRYPOINT ["/app/bin/cli.js"]

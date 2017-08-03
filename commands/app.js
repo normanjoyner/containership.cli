@@ -1,5 +1,6 @@
 'use strict';
 
+const logger = require('../lib/logger');
 const request = require('../lib/request');
 const Table = require('../lib/table');
 const utils = require('../lib/utils');
@@ -76,7 +77,7 @@ module.exports.commands.push({
     callback: () => {
         return request.get('applications', {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch applications!');
+                return logger.error('Could not fetch applications!');
             }
 
             const headers = [
@@ -98,7 +99,7 @@ module.exports.commands.push({
                     return accumulator;
                 }, 0);
 
-                return[
+                return [
                     app.id,
                     app.image,
                     app.command,
@@ -109,11 +110,11 @@ module.exports.commands.push({
             });
 
             if(data.length === 0) {
-                return console.error('You currently have no applications configured on the cluster!');
+                return logger.error('You currently have no applications configured on the cluster!');
             }
 
             const output = Table.createTable(headers, data);
-            return console.info(output);
+            return logger.info(output);
         });
     }
 });
@@ -124,11 +125,11 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.get(`applications/${argv.app_name}`, {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch application!');
+                return logger.error('Could not fetch application!');
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Application ${argv.app_name} was not found!`);
+                return logger.error(`Application ${argv.app_name} was not found!`);
             }
 
             const app = response.body;
@@ -150,7 +151,7 @@ module.exports.commands.push({
             ];
 
             const env_vars = _.map(app.env_vars, (v, k) => {
-                return`${chalk.gray(k)}: ${v}`;
+                return `${chalk.gray(k)}: ${v}`;
             });
 
             const volumes = _.map(app.volumes, (vol) => {
@@ -164,7 +165,7 @@ module.exports.commands.push({
             });
 
             const tags = _.map(flatten(app.tags), (v, k) => {
-                return`${chalk.gray(k)}: ${v}`;
+                return `${chalk.gray(k)}: ${v}`;
             });
 
             const data = [
@@ -184,7 +185,7 @@ module.exports.commands.push({
             ];
 
             const output = Table.createVerticalTable(headers, [data]);
-            return console.info(output);
+            return logger.info(output);
         });
     }
 });
@@ -199,14 +200,14 @@ module.exports.commands.push({
 
         return request.post(`applications/${argv.app_name}`, {}, options, (err, response) => {
             if(err) {
-                return console.error(`Could not create application ${argv.app_name}!`);
+                return logger.error(`Could not create application ${argv.app_name}!`);
             }
 
             if(response.statusCode !== 200) {
-                return console.error(response.body.error);
+                return logger.error(response.body.error);
             }
 
-            return console.info(`Successfully created application ${argv.app_name}!`);
+            return logger.info(`Successfully created application ${argv.app_name}!`);
         });
     }
 });
@@ -221,11 +222,11 @@ module.exports.commands.push({
 
         return request.get(`applications/${argv.app_name}`, {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch application!');
+                return logger.error('Could not fetch application!');
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Application ${argv.app_name} was not found!`);
+                return logger.error(`Application ${argv.app_name} was not found!`);
             }
 
             const app = response.body;
@@ -256,7 +257,7 @@ module.exports.commands.push({
                     existing.host = vol.host;
                     existing.container = vol.container;
                     existing.propogation = vol.propogation;
-                } else{
+                } else {
                     app.volumes.push(vol);
                 }
             });
@@ -264,14 +265,14 @@ module.exports.commands.push({
 
             return request.put(`applications/${argv.app_name}`, {}, options, (err, response) => {
                 if(err) {
-                    return console.error(`Could not update application ${argv.app_name}!`);
+                    return logger.error(`Could not update application ${argv.app_name}!`);
                 }
 
-                if(response.statusCode != 200) {
-                    return console.error(response.body.error);
+                if(response.statusCode !== 200) {
+                    return logger.error(response.body.error);
                 }
 
-                return console.info(`Successfully updated application ${argv.app_name}!`);
+                return logger.info(`Successfully updated application ${argv.app_name}!`);
             });
         });
 
@@ -284,18 +285,18 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.delete(`applications/${argv.app_name}`, {}, (err, response) => {
             if(err) {
-                return console.error(`Could not delete application ${argv.app_name}!`);
+                return logger.error(`Could not delete application ${argv.app_name}!`);
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Application ${argv.app_name} does not exist!`);
+                return logger.error(`Application ${argv.app_name} does not exist!`);
             }
 
             if(response.statusCode !== 204) {
-                return console.error(`Could not delete application ${argv.app_name}!`);
+                return logger.error(`Could not delete application ${argv.app_name}!`);
             }
 
-            return console.info(`Successfully deleted application ${argv.app_name}!`);
+            return logger.info(`Successfully deleted application ${argv.app_name}!`);
         });
     }
 });
@@ -313,18 +314,18 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.post(`applications/${argv.app_name}/containers`, { count: argv.count }, null, (err, response) => {
             if(err) {
-                return console.error(`Could not scale up application ${argv.app_name}!`);
+                return logger.error(`Could not scale up application ${argv.app_name}!`);
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Application ${argv.app_name} does not exist!`);
+                return logger.error(`Application ${argv.app_name} does not exist!`);
             }
 
             if(response.statusCode !== 201) {
-                return console.error(response.body.error);
+                return logger.error(response.body.error);
             }
 
-            return console.info(`Successfully scaled up application ${argv.app_name}!`);
+            return logger.info(`Successfully scaled up application ${argv.app_name}!`);
         });
     }
 });
@@ -342,18 +343,18 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.delete(`applications/${argv.app_name}/containers`, { count: argv.count }, (err, response) => {
             if(err) {
-                return console.error(`Could not scale down application ${argv.app_name}!`);
+                return logger.error(`Could not scale down application ${argv.app_name}!`);
             }
 
             if(response.statusCode === 404) {
-                return console.error(`Application ${argv.app_name} does not exist!`);
+                return logger.error(`Application ${argv.app_name} does not exist!`);
             }
 
             if(response.statusCode !== 204) {
-                return console.error(response.body.error);
+                return logger.error(response.body.error);
             }
 
-            return console.info(`Successfully scaled down application ${argv.app_name}!`);
+            return logger.info(`Successfully scaled down application ${argv.app_name}!`);
         });
     }
 });

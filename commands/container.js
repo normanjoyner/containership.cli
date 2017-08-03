@@ -1,5 +1,6 @@
 'use strict';
 
+const logger = require('../lib/logger');
 const request = require('../lib/request');
 const Table = require('../lib/table');
 
@@ -32,11 +33,11 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.get('applications', {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch containers!');
+                return logger.error('Could not fetch containers!');
             }
 
             const app_names = argv.app;
-            console.log(app_names);
+            logger.info(app_names);
 
             if(app_names.length) {
                 let oneExists = false;
@@ -53,7 +54,7 @@ module.exports.commands.push({
                 });
 
                 if(!oneExists) {
-                    return console.error(`None of the '${app_names.toString()}' applications exist on the cluster, could not retrieve containers!`);
+                    return logger.error(`None of the '${app_names.toString()}' applications exist on the cluster, could not retrieve containers!`);
                 }
 
                 response.body = tmp;
@@ -72,7 +73,7 @@ module.exports.commands.push({
                     return app.containers
                         .filter(container => argv.host.length === 0 || argv.host.indexOf(container.host) !== -1)
                         .map((container) => {
-                            return[
+                            return [
                                 container.id,
                                 name,
                                 container.host,
@@ -85,11 +86,11 @@ module.exports.commands.push({
                 .value();
 
             if(data.length === 0) {
-                return console.error('No containers exist on the cluster given your host and application filters.');
+                return logger.error('No containers exist on the cluster given your host and application filters.');
             }
 
             const output = Table.createTable(headers, data);
-            return console.info(output);
+            return logger.info(output);
         });
     }
 });
@@ -100,7 +101,7 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.get('applications', {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch containers!');
+                return logger.error('Could not fetch containers!');
             }
 
             const headers = [
@@ -118,21 +119,21 @@ module.exports.commands.push({
             ];
 
             const containers = _.chain(response.body)
-                    .map(app => {
-                        return _.map(app.containers, (container) => {
-                            container.application_name = app.id;
-                            return container;
-                        });
-                    })
-                    .flatten()
-                    .value();
+                .map(app => {
+                    return _.map(app.containers, (container) => {
+                        container.application_name = app.id;
+                        return container;
+                    });
+                })
+                .flatten()
+                .value();
 
             const container = _.find(containers, { id: argv.container_id });
 
             if(!container) {
                 let err_msg = `Could not find container with id ${argv.container_id}`;
 
-                return console.error(`${err_msg}!`);
+                return logger.error(`${err_msg}!`);
             }
 
             const data = [
@@ -150,7 +151,7 @@ module.exports.commands.push({
             ];
 
             const output = Table.createVerticalTable(headers, [data]);
-            console.info(output);
+            logger.info(output);
         });
     }
 });
@@ -204,7 +205,7 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.get('applications', {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch containers!');
+                return logger.error('Could not fetch containers!');
             }
 
             let app_name = null;
@@ -217,7 +218,7 @@ module.exports.commands.push({
             });
 
             if(!app_name) {
-                return console.error(`Could not find container ${argv.container_id} to stream logs from`);
+                return logger.error(`Could not find container ${argv.container_id} to stream logs from`);
             }
 
             if(argv.type === 'stdout' || argv.type === 'all') {
@@ -237,7 +238,7 @@ module.exports.commands.push({
     callback: (argv) => {
         return request.get('applications', {}, (err, response) => {
             if(err) {
-                return console.error('Could not fetch containers!');
+                return logger.error('Could not fetch containers!');
             }
 
             let app_name = null;
@@ -250,19 +251,19 @@ module.exports.commands.push({
             });
 
             if(!app_name) {
-                return console.error(`Could not find container ${argv.container_id} to remove!`);
+                return logger.error(`Could not find container ${argv.container_id} to remove!`);
             }
 
             return request.delete(`applications/${app_name}/containers/${argv.container_id}`, {}, (err, response) => {
                 if(err) {
-                    return console.error('Could not fetch containers!');
+                    return logger.error('Could not fetch containers!');
                 }
 
                 if(!response.statusCode === 204) {
-                    return console.error(`Failed to remove container ${argv.container_id} from application ${app_name}!`);
+                    return logger.error(`Failed to remove container ${argv.container_id} from application ${app_name}!`);
                 }
 
-                return console.info(`Successfully removed container ${argv.container_id} from application ${app_name}!`);
+                return logger.info(`Successfully removed container ${argv.container_id} from application ${app_name}!`);
             });
         });
     }

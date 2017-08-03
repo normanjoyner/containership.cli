@@ -1,9 +1,10 @@
 'use strict';
 
-const _ = require('lodash');
-
+const logger = require('../lib/logger');
 const request = require('../lib/request');
 const Table = require('../lib/table');
+
+const _ = require('lodash');
 
 module.exports = {
     name: 'info',
@@ -11,7 +12,7 @@ module.exports = {
     callback: () => {
         return request.get('cluster/state', {}, (err, response) => {
             if(err) {
-                return console.error(err);
+                return logger.error(err);
             }
 
             const cluster = response.body;
@@ -63,7 +64,7 @@ module.exports = {
             ];
 
             const output = Table.createVerticalTable(headers, [data]);
-            console.log(output);
+            logger.info(output);
         });
     }
 };
