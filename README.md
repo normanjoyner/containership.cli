@@ -11,20 +11,20 @@ Containership Developers - developers@containership.io
 
 ### Install
 
+#### Docker
+```
+docker pull containership/containership.cli
+alias cs="docker run -it -v $HOME/.containership:/root/.containership containership/containership.cli"
+```
+
+#### Local
 `npm install containership.cli -g`
-
-or
-
-`docker pull containership/containership.cli`
 
 ### Commands
 
 From the containership executable, you can see the available commands and options by running:
-`csctl --help`
 
-or
-
-`docker run -v $HOME/.containership:/root/.containership containership/containership.cli --help`
+`cs --help`
 
 ## Contributing
 
