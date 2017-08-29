@@ -26,10 +26,10 @@ csctl container list
 └──────────────────────────────────────┴─────────────────────────────────┴──────────────────────────────────────┴─────────────────────────────────────────┴────────┘
 ~~~
 
-You can also filter the returned containers via either `application` or `host` with the `--app` and `--host` flags respectively:
+You can also filter the returned containers via either `service` or `host` with the `--app` and `--host` flags respectively:
 
 ~~~
-csctl container list --app containership-logs
+csctl container list --svc containership-logs
 
 ┌──────────────────────────────────────┬────────────────────┬──────────────────────────────────────┬─────────────────────────────────────────┬────────┐
 │ CONTAINER_ID                         │ APPLICATION        │ HOST                                 │ START_TIME                              │ STATUS │

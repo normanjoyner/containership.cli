@@ -1,24 +1,24 @@
 ---
-command-name: 'app create'
-permalink: '/docs/commands/app-create'
+command-name: 'svc create'
+permalink: '/docs/commands/svc-create'
 ---
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} command allows you to create a new application to be run on your cluster.
-To create an application you can run the `app create <app_name> ...flags` with any of the following flags
+The {{ page.command-name }} command allows you to create a new service to be run on your cluster.
+To create an service you can run the `svc create <service_name> ...flags` with any of the following flags
 specified:
 
 |------+----+------------+----+----------|
 | Argument | Alias | Description | Required | Default |
 |-----------------|------|-----------|----------------|-------|
-| image | i | Docker image for the application to run | y | |
+| image | i | Docker image for the service to run | y | |
 |-----------------+------------+-----------------+----------------|
-| env-var | e | Environment variable to add to the application | n | |
+| env-var | e | Environment variable to add to the service | n | |
 |-----------------+------------+-----------------+----------------|
-| network-mode | n | Network mode for the application to run in (bridge or host) | y | bridge |
+| network-mode | n | Network mode for the service to run in (bridge or host) | y | bridge |
 |-----------------+------------+-----------------+----------------|
-| container-port | p | Container port the application is listening on | n | |
+| container-port | p | Container port the service is listening on | n | |
 |-----------------+------------+-----------------+----------------|
 | command | s | Start command for the container | n | |
 |-----------------+------------+-----------------+----------------|
@@ -35,22 +35,22 @@ specified:
 | respawn | | Whether or not the container respawns after exit | n | false |
 |=================+============+=================+================+===|
 
-> All array values, e.g. (env-var, volume, tag) can be added multiple times during an application create.
+> All array values, e.g. (env-var, volume, tag) can be added multiple times during an service create.
 
 > Tags support the dot-notation syntax for creating nested tags. e.g. (--tag metadata.hasSeen=true)
 
-Example: Creating a redis application
+Example: Creating a redis service
 
 ~~~
-csctl app create sampleredis --image=library/redis:3.0.7 -m 64 -c 0.1 -p 6379
+csctl svc create sampleredis --image=library/redis:3.0.7 -m 64 -c 0.1 -p 6379
 
-Successfully created application sampleredis!
+Successfully created service sampleredis!
 ~~~
 
-To view the newly created application:
+To view the newly created service:
 
 ~~~
-csctl app show sampleredis
+csctl svc show sampleredis
 
 ┌────────────────┬─────────────────────┐
 │ IMAGE          │ library/redis:3.0.7 │

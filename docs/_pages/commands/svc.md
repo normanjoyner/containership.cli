@@ -1,12 +1,12 @@
 ---
-command-name: 'app'
-permalink: '/docs/commands/app'
+command-name: 'svc'
+permalink: '/docs/commands/svc'
 ---
 
 <h2> Overview </h2>
 
 <p>
-The {{ page.command-name }} is responsible for listing, showing, and manipulating applications on your cluster. See the sub-commands below for more information.
+The {{ page.command-name }} is responsible for listing, showing, and manipulating services on your cluster. See the sub-commands below for more information.
 </p>
 
 <h2> Commands </h2>

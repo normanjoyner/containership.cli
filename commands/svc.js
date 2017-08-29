@@ -12,7 +12,7 @@ const unflatten = flatten.unflatten;
 
 const application_options = {
     engine: {
-        description: 'Engine used to start application',
+        description: 'Engine used to start service',
         alias: 'x'
     },
     image: {
@@ -21,7 +21,7 @@ const application_options = {
     },
     'env-var': {
         array: true,
-        description: 'Environment variable for application',
+        description: 'Environment variable for service',
         alias: 'e'
     },
     'network-mode': {
@@ -29,7 +29,7 @@ const application_options = {
         alias: 'n'
     },
     'container-port': {
-        description: 'Port application must listen on',
+        description: 'Port service must listen on',
         alias: 'p'
     },
     command: {
@@ -37,47 +37,47 @@ const application_options = {
         alias: 's'
     },
     volume: {
-        description: 'Volume to bind-mount for application',
+        description: 'Volume to bind-mount for service',
         array: true,
         alias: 'b'
     },
     tag: {
-        description: 'Tag to add to application',
+        description: 'Tag to add to service',
         array: true,
         alias: 't'
     },
     cpus: {
-        description: 'CPUs allocated to application',
+        description: 'CPUs allocated to service',
         alias: 'c'
     },
     memory: {
-        description: 'Memory (mb) allocated to application',
+        description: 'Memory (mb) allocated to service',
         alias: 'm'
     },
     privileged: {
-        description: 'Run application containers in privileged mode',
+        description: 'Run service containers in privileged mode',
         boolean: true
     },
     respawn: {
-        description: 'Respawn application containers when they die',
+        description: 'Respawn service containers when they die',
         boolean: true,
         default: true
     }
 };
 
 module.exports = {
-    name: 'app',
-    description: 'List and manipulate applications running on the cluster specified by the client remote.',
+    name: 'svc',
+    description: 'List and manipulate services running on the cluster specified by the client remote.',
     commands: []
 };
 
 module.exports.commands.push({
     name: 'list',
-    description: 'List applications on the cluster.',
+    description: 'List services on the cluster.',
     callback: () => {
         return request.get('applications', {}, (err, response) => {
             if(err) {
-                return logger.error('Could not fetch applications!');
+                return logger.error('Could not fetch services!');
             }
 
             const headers = [
@@ -110,7 +110,7 @@ module.exports.commands.push({
             });
 
             if(data.length === 0) {
-                return logger.error('You currently have no applications configured on the cluster!');
+                return logger.error('You currently have no services configured on the cluster!');
             }
 
             const output = Table.createTable(headers, data);
@@ -120,16 +120,16 @@ module.exports.commands.push({
 });
 
 module.exports.commands.push({
-    name: 'show <app_name>',
-    description: 'Show detailed information for specified application.',
+    name: 'show <service_name>',
+    description: 'Show detailed information for specified service.',
     callback: (argv) => {
-        return request.get(`applications/${argv.app_name}`, {}, (err, response) => {
+        return request.get(`applications/${argv.service_name}`, {}, (err, response) => {
             if(err) {
-                return logger.error('Could not fetch application!');
+                return logger.error('Could not fetch services!');
             }
 
             if(response.statusCode === 404) {
-                return logger.error(`Application ${argv.app_name} was not found!`);
+                return logger.error(`Application ${argv.service_name} was not found!`);
             }
 
             const app = response.body;
@@ -191,42 +191,42 @@ module.exports.commands.push({
 });
 
 module.exports.commands.push({
-    name: 'create <app_name>',
-    description: 'Create application.',
+    name: 'create <service_name>',
+    description: 'Create service.',
     options: application_options,
     callback: (argv) => {
         let options = _.omit(argv, ['h', 'help', '$0', '_']);
         options = parse_update_body(options);
 
-        return request.post(`applications/${argv.app_name}`, {}, options, (err, response) => {
+        return request.post(`applications/${argv.service_name}`, {}, options, (err, response) => {
             if(err) {
-                return logger.error(`Could not create application ${argv.app_name}!`);
+                return logger.error(`Could not create service ${argv.service_name}!`);
             }
 
             if(response.statusCode !== 200) {
                 return logger.error(response.body.error);
             }
 
-            return logger.info(`Successfully created application ${argv.app_name}!`);
+            return logger.info(`Successfully created service ${argv.service_name}!`);
         });
     }
 });
 
 module.exports.commands.push({
-    name: 'edit <app_name>',
-    description: 'Edit application.',
+    name: 'edit <service_name>',
+    description: 'Edit service.',
     options: application_options,
     callback: (argv) => {
         let options = _.omit(argv, ['h', 'help', '$0', '_']);
         options = parse_update_body(options);
 
-        return request.get(`applications/${argv.app_name}`, {}, (err, response) => {
+        return request.get(`applications/${argv.service_name}`, {}, (err, response) => {
             if(err) {
-                return logger.error('Could not fetch application!');
+                return logger.error('Could not fetch service!');
             }
 
             if(response.statusCode === 404) {
-                return logger.error(`Application ${argv.app_name} was not found!`);
+                return logger.error(`Application ${argv.service_name} was not found!`);
             }
 
             const app = response.body;
@@ -263,16 +263,16 @@ module.exports.commands.push({
             });
             options.volumes = app.volumes;
 
-            return request.put(`applications/${argv.app_name}`, {}, options, (err, response) => {
+            return request.put(`applications/${argv.service_name}`, {}, options, (err, response) => {
                 if(err) {
-                    return logger.error(`Could not update application ${argv.app_name}!`);
+                    return logger.error(`Could not update service ${argv.service_name}!`);
                 }
 
                 if(response.statusCode !== 200) {
                     return logger.error(response.body.error);
                 }
 
-                return logger.info(`Successfully updated application ${argv.app_name}!`);
+                return logger.info(`Successfully updated service ${argv.service_name}!`);
             });
         });
 
@@ -280,81 +280,81 @@ module.exports.commands.push({
 });
 
 module.exports.commands.push({
-    name: 'delete <app_name>',
-    description: 'Delete application.',
+    name: 'delete <service_name>',
+    description: 'Delete service.',
     callback: (argv) => {
-        return request.delete(`applications/${argv.app_name}`, {}, (err, response) => {
+        return request.delete(`applications/${argv.service_name}`, {}, (err, response) => {
             if(err) {
-                return logger.error(`Could not delete application ${argv.app_name}!`);
+                return logger.error(`Could not delete service ${argv.service_name}!`);
             }
 
             if(response.statusCode === 404) {
-                return logger.error(`Application ${argv.app_name} does not exist!`);
+                return logger.error(`Application ${argv.service_name} does not exist!`);
             }
 
             if(response.statusCode !== 204) {
-                return logger.error(`Could not delete application ${argv.app_name}!`);
+                return logger.error(`Could not delete service ${argv.service_name}!`);
             }
 
-            return logger.info(`Successfully deleted application ${argv.app_name}!`);
+            return logger.info(`Successfully deleted service ${argv.service_name}!`);
         });
     }
 });
 
 module.exports.commands.push({
-    name: 'scale-up <app_name>',
-    description: 'Scale up application containers.',
+    name: 'scale-up <service_name>',
+    description: 'Scale up service containers.',
     options: {
         count: {
-            description: 'Number of containers to scale application up by.',
+            description: 'Number of containers to scale service up by.',
             alias: 'c',
             default: 1
         }
     },
     callback: (argv) => {
-        return request.post(`applications/${argv.app_name}/containers`, { count: argv.count }, null, (err, response) => {
+        return request.post(`applications/${argv.service_name}/containers`, { count: argv.count }, null, (err, response) => {
             if(err) {
-                return logger.error(`Could not scale up application ${argv.app_name}!`);
+                return logger.error(`Could not scale up service ${argv.service_name}!`);
             }
 
             if(response.statusCode === 404) {
-                return logger.error(`Application ${argv.app_name} does not exist!`);
+                return logger.error(`Application ${argv.service_name} does not exist!`);
             }
 
             if(response.statusCode !== 201) {
                 return logger.error(response.body.error);
             }
 
-            return logger.info(`Successfully scaled up application ${argv.app_name}!`);
+            return logger.info(`Successfully scaled up service ${argv.service_name}!`);
         });
     }
 });
 
 module.exports.commands.push({
-    name: 'scale-down <app_name>',
-    description: 'Scale down application containers.',
+    name: 'scale-down <service_name>',
+    description: 'Scale down service containers.',
     options: {
         count: {
-            description: 'Number of containers to scale application down by.',
+            description: 'Number of containers to scale service down by.',
             alias: 'c',
             default: 1
         }
     },
     callback: (argv) => {
-        return request.delete(`applications/${argv.app_name}/containers`, { count: argv.count }, (err, response) => {
+        return request.delete(`applications/${argv.service_name}/containers`, { count: argv.count }, (err, response) => {
             if(err) {
-                return logger.error(`Could not scale down application ${argv.app_name}!`);
+                return logger.error(`Could not scale down service ${argv.service_name}!`);
             }
 
             if(response.statusCode === 404) {
-                return logger.error(`Application ${argv.app_name} does not exist!`);
+                return logger.error(`Application ${argv.service_name} does not exist!`);
             }
 
             if(response.statusCode !== 204) {
                 return logger.error(response.body.error);
             }
 
-            return logger.info(`Successfully scaled down application ${argv.app_name}!`);
+            return logger.info(`Successfully scaled down service ${argv.service_name}!`);
         });
     }
 });

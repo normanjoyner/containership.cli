@@ -13,7 +13,7 @@ The {{ page.command-name }} command allows you to edit tags on an existing host 
 | tag | t | Tag to add to the container | n | |
 |=================+============+=================+================+===|
 
-> All array values can be added multiple times during an application edit. If
+> All array values can be added multiple times during a host edit. If
 you set the value of an array option to the empty string, that value will be cleared if it exists.
 
 > Tags support the dot-notation syntax for creating nested tags. e.g. (--tag metadata.hasSeen=true)

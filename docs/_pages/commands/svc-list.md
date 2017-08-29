@@ -1,17 +1,17 @@
 ---
-command-name: 'app list'
-permalink: '/docs/commands/app-list'
+command-name: 'svc list'
+permalink: '/docs/commands/svc-list'
 ---
 
 <h2> {{ page.command-name }} </h2>
 
 <p>
-The {{ page.command-name }} allows you to view a list of all the applications running on your cluster with
-some basic metadata about each application displayed.
+The {{ page.command-name }} allows you to view a list of all the services running on your cluster with
+some basic metadata about each service displayed.
 </p>
 
 ~~~
-csctl app list
+csctl svc list
 
 ┌─────────────────────────────────┬────────────────────────────────────────────┬─────────┬──────┬────────┬────────────┐
 │ ID                              │ IMAGE                                      │ COMMAND │ CPUS │ MEMORY │ CONTAINERS │

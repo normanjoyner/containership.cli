@@ -13,22 +13,22 @@ docs:
 
   - title: Commands
     children:
-      - title: "app"
-        url: /docs/commands/app
-      - title: "app create"
-        url: /docs/commands/app-create
-      - title: "app delete"
-        url: /docs/commands/app-delete
-      - title: "app edit"
-        url: /docs/commands/app-edit
-      - title: "app list"
-        url: /docs/commands/app-list
-      - title: "app scale-down"
-        url: /docs/commands/app-scale-down
-      - title: "app scale-up"
-        url: /docs/commands/app-scale-up
-      - title: "app show"
-        url: /docs/commands/app-show
+      - title: "svc"
+        url: /docs/commands/svc
+      - title: "svc create"
+        url: /docs/commands/svc-create
+      - title: "svc delete"
+        url: /docs/commands/svc-delete
+      - title: "svc edit"
+        url: /docs/commands/svc-edit
+      - title: "svc list"
+        url: /docs/commands/svc-list
+      - title: "svc scale-down"
+        url: /docs/commands/svc-scale-down
+      - title: "svc scale-up"
+        url: /docs/commands/svc-scale-up
+      - title: "svc show"
+        url: /docs/commands/svc-show
       - title: "client-plugin"
         url: /docs/commands/client-plugin
       - title: "client-plugin add"

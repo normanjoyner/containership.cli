@@ -1,17 +1,17 @@
 ---
-command-name: 'app show'
-permalink: '/docs/commands/app-show'
+command-name: 'svc show'
+permalink: '/docs/commands/svc-show'
 ---
 
 <h2> {{ page.command-name }} </h2>
 
 <p>
 The {{ page.command-name }} allows you to view a details about a specific
-application running on your cluster.
+service running on your cluster.
 </p>
 
 ~~~
-csctl app show containership-logs
+csctl svc show containership-logs
 
 ┌────────────────┬───────────────────────────────────────────────┐
 │ IMAGE          │ containership/docker-cs-logs:latest           │
