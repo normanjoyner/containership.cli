@@ -93,7 +93,7 @@ You can then login to your Containership Cloud account via:
 
 `csctl cloud account login`
 
-> You can generate an access token for the CLI at <https://cloud.containership.io/account/accesstoken>
+> You can generate an access token for the CLI at <http://docs.containership.io/access-control#personal-access-tokens>
 
 From there you can list all the organizations you belong to with:
 
