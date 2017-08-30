@@ -11,9 +11,9 @@ title                    : "Containership CLI"
 title_separator          : "-"
 name                     : ""
 description              : "Containership CLI Documentation"
-#url                      : "https://nicktate.github.com"
+#url                     :
 baseurl                  : "/containership.cli"
-repository               : "nicktate/containership.cli"
+repository               : "containership/containership.cli"
 staticman:
   allowedFields          : ['name', 'email', 'url', 'message']
   branch                 : "master"
