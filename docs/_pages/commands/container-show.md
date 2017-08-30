@@ -5,10 +5,8 @@ permalink: '/docs/commands/container-show'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view a details about a specific
+The `{{ page.command-name }}` command allows you to view a details about a specific
 container running on your cluster.
-</p>
 
 ~~~
 csctl container show a90df8bd-88ec-11e7-ac5c-c6eb5499ee1a

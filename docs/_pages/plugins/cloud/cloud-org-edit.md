@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-org-edit'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to edit details about your containership cloud organization.
-</p>
+The `{{ page.command-name }}` command allows you to edit details about your containership cloud organization.
 
 |------+----+------------+----+----------|
 | Argument | Alias | Description | Required | Default |

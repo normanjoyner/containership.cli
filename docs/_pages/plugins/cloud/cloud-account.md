@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-account'
 
 <h2> Overview </h2>
 
-<p>
-The {{ page.command-name }} command allows you to display and configure your containership cloud account.
-</p>
+The `{{ page.command-name }}` command allows you to display and configure your Containership Cloud account.
 
 <h2> Commands </h2>
 

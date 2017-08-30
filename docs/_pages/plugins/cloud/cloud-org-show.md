@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-org-show'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view detailed information about the given organization.
-</p>
+The `{{ page.command-name }}` command allows you to view detailed information about the given organization.
 
 ~~~
 csctl cloud org show <org_id>

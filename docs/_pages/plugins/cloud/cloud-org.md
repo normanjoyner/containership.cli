@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-org'
 
 <h2> Overview </h2>
 
-<p>
-The {{ page.command-name }} command allows you to display and configure your containership cloud organization.
-</p>
+The `{{ page.command-name }}` command allows you to display and configure your containership cloud organization.
 
 <h2> Commands </h2>
 

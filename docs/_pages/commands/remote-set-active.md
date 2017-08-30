@@ -5,7 +5,7 @@ permalink: '/docs/commands/remote-set-active'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} command allows you to update the currently active remote for your cli.
+The `{{ page.command-name }}` command allows you to update the currently active remote for your CLI.
 
 `csctl remote set-active <remote_name>`
 

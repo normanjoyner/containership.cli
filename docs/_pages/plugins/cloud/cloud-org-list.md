@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-org-list'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view a list of all the organizations you have access to.
-</p>
+The `{{ page.command-name }}` command allows you to view a list of all the organizations you have access to.
 
 ~~~
 csctl cloud org list

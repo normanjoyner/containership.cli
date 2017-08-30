@@ -5,7 +5,7 @@ permalink: '/docs/commands/host-edit'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} command allows you to edit tags on an existing host in your containership cluster.
+The `{{ page.command-name }}` command allows you to edit tags on an existing host in your containership cluster.
 
 |------+----+------------+----+----------|
 | Argument | Alias | Description | Required | Default |
@@ -21,7 +21,7 @@ you set the value of an array option to the empty string, that value will be cle
 Example: Editing tags on a host
 
 ~~~
-$ ./bin/cli.js host edit 0130a049-4d15-46fc-96a5-85e1cb29212c --tag key1=value1
+csctl host edit 0130a049-4d15-46fc-96a5-85e1cb29212c --tag key1=value1
 
 Successfully updated host 0130a049-4d15-46fc-96a5-85e1cb29212c!
 ~~~
@@ -29,7 +29,7 @@ Successfully updated host 0130a049-4d15-46fc-96a5-85e1cb29212c!
 You can then see the updated tag reflected in the `show` command.
 
 ~~~
-$ ./bin/cli.js host show 0130a049-4d15-46fc-96a5-85e1cb29212c
+csctl host show 0130a049-4d15-46fc-96a5-85e1cb29212c
 ┌───────────────────────┬────────────────────────────────────────────────────────────────────┐
 │ ID                    │ 0130a049-4d15-46fc-96a5-85e1cb29212c                               │
 ├───────────────────────┼────────────────────────────────────────────────────────────────────┤

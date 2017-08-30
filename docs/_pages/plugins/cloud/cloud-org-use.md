@@ -5,10 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-org-use'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to set the given organization as the active org for the command line client.
-</p>
-
+The `{{ page.command-name }}` command allows you to set the given organization as the active org for the command line client.
 
 `csctl cloud org use <org_id>`
 

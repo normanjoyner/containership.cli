@@ -5,9 +5,7 @@ permalink: '/docs/commands/container'
 
 <h2> Overview </h2>
 
-<p>
-The {{ page.command-name }} is responsible for listing, showing, and manipulating containers on your cluster. See the sub-commands below for more information.
-</p>
+The `{{ page.command-name }}` command is responsible for listing, showing, and manipulating containers on your cluster. See the sub-commands below for more information.
 
 <h2> Commands </h2>
 

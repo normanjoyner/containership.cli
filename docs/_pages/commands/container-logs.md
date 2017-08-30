@@ -5,9 +5,7 @@ permalink: '/docs/commands/container-logs'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to stream stdout and stderr logs from a container.
-</p>
+The `{{ page.command-name }}` command allows you to stream stdout and stderr logs from a container.
 
 |------+----+------------+----+----------|
 | Argument | Alias | Description | Required | Default |

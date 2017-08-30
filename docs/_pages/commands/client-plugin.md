@@ -5,9 +5,7 @@ permalink: '/docs/commands/client-plugin'
 
 <h2> Overview </h2>
 
-<p>
-The {{ page.command-name }} is responsible for listing, showing, and manipulating both core plugins on your cluster and extensible cli plugins.
-</p>
+The `{{ page.command-name }}` command is responsible for listing, showing, and manipulating both core plugins on your cluster and extensible CLI plugins.
 
 <h2> Commands </h2>
 

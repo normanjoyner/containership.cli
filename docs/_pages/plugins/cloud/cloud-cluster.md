@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-cluster'
 
 <h2> Overview </h2>
 
-<p>
-The {{ page.command-name }} command allows you to display and configure your containership cloud cluster.
-</p>
+The `{{ page.command-name }}` command allows you to display and configure your containership cloud cluster.
 
 <h2> Commands </h2>
 

@@ -5,10 +5,8 @@ permalink: '/docs/commands/container-list'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view a list of all the containers running on your cluster with
+The `{{ page.command-name }}` command allows you to view a list of all the containers running on your cluster with
 some basic metadata about each container displayed.
-</p>
 
 ~~~
 csctl container list

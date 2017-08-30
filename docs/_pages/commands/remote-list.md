@@ -5,9 +5,7 @@ permalink: '/docs/commands/remote-list'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view a list of all the configured remotes pointing to containership clusters.
-</p>
+The `{{ page.command-name }}` command allows you to view a list of all the configured remotes pointing to containership clusters.
 
 ~~~
 csctl remote list

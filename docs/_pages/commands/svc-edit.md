@@ -5,8 +5,8 @@ permalink: '/docs/commands/svc-edit'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} command allows you to edit an existing service running on your cluster.
-To edit an service you can run the `svc create <service_name> ...flags` with any of the following flags
+The `{{ page.command-name }}` command allows you to edit an existing service running on your cluster.
+To edit a service you can run the `svc create <service_name> ...flags` with any of the following flags
 specified:
 
 |------+----+------------+----+----------|
@@ -32,10 +32,10 @@ specified:
 |-----------------+------------+-----------------+----------------|
 | privileged | | Whether or not the container runs in privileged mode | n | false |
 |-----------------+------------+-----------------+----------------|
-| respawn | | Whether or not the container respawns after exit | n | false |
+| respawn | | Whether or not the container respawns after exit | n | true |
 |=================+============+=================+================+===|
 
-> All array values, e.g. (env-var, volume, tag) can be added multiple times during an service edit. If
+> All array values, e.g. (env-var, volume, tag) can be added multiple times during a service edit. If
 you set the value of an array option to the empty string, that value will be cleared if it exists.
 
 > Tags support the dot-notation syntax for creating nested tags. e.g. (--tag metadata.hasSeen=true)
@@ -43,7 +43,7 @@ you set the value of an array option to the empty string, that value will be cle
 Example: Editing a redis service
 
 ~~~
-csctl svc create sampleredis --image=library/redis:3.0.7 -m 64 -c 0.1 -p 6379
+csctl svc edit sampleredis --image=library/redis:3.0.7 -m 64 -c 0.1 -p 6379
 
 Successfully edited service sampleredis!
 ~~~

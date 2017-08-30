@@ -5,7 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-cluster-list'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} allows you to view a list of all the clusters you have access to underneath
+The `{{ page.command-name }}` command allows you to view a list of all the clusters you have access to underneath
 the currently `active_organization`.
 
 > See [cloud org use]({{ site.baseurl }}/docs/plugins/cloud/cloud-org-use)

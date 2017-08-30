@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-account-info'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view details about your containership cloud account.
-</p>
+The `{{ page.command-name }}` command allows you to view details about your Containership Cloud account.
 
 ~~~
 csctl cloud account info

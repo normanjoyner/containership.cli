@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-account-login'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to logout of your cloud account for the CLI.
-</p>
+The `{{ page.command-name }}` command allows you to log in to of your cloud account for the CLI.
 
 `csctl cloud account login`
 

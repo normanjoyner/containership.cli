@@ -5,8 +5,8 @@ permalink: '/docs/commands/svc-create'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} command allows you to create a new service to be run on your cluster.
-To create an service you can run the `svc create <service_name> ...flags` with any of the following flags
+The `{{ page.command-name }}` command allows you to create a new service to be run on your cluster.
+To create a service you can run the `svc create <service_name> ...flags` with any of the following flags
 specified:
 
 |------+----+------------+----+----------|
@@ -32,10 +32,10 @@ specified:
 |-----------------+------------+-----------------+----------------|
 | privileged | | Whether or not the container runs in privileged mode | n | false |
 |-----------------+------------+-----------------+----------------|
-| respawn | | Whether or not the container respawns after exit | n | false |
+| respawn | | Whether or not the container respawns after exit | n | true |
 |=================+============+=================+================+===|
 
-> All array values, e.g. (env-var, volume, tag) can be added multiple times during an service create.
+> All array values, e.g. (env-var, volume, tag) can be added multiple times during a service create.
 
 > Tags support the dot-notation syntax for creating nested tags. e.g. (--tag metadata.hasSeen=true)
 

@@ -5,9 +5,7 @@ permalink: '/docs/commands/svc-scale-up'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to scale up an service running on your cluster.
-</p>
+The `{{ page.command-name }}` command allows you to scale up a service running on your cluster.
 
 |------+----+------------+----+----------|
 | Argument | Alias | Description | Required | Default |

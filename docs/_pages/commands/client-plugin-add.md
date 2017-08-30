@@ -5,7 +5,7 @@ permalink: '/docs/commands/client-plugin-add'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} command allows you to add new `core` or `cli` plugins to your `.containership` directory.
+The `{{ page.command-name }}` command allows you to add new `core` or `cli` plugins to your `.containership` directory.
 
 > When a plugin is added, it is attempted to be synced and loaded as a `cli` plugin. If it is not a valid plugin it will be
 ignored but may still be used as a `core` plugin if this is running on a containership node.
@@ -23,7 +23,7 @@ The command supports plugins in either `npm` or `github://` format (brackets den
 Example adding the `cloud` plugin:
 
 ~~~
-./bin/cli.js client-plugin add github://containership/containership.plugin.cloud
+csctl client-plugin add github://containership/containership.plugin.cloud
 
 added 325 packages in 35.971s
 Successfully upgraded all plugins!

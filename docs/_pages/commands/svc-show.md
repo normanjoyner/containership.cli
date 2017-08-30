@@ -5,10 +5,8 @@ permalink: '/docs/commands/svc-show'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view a details about a specific
+The `{{ page.command-name }}` command allows you to view a details about a specific
 service running on your cluster.
-</p>
 
 ~~~
 csctl svc show containership-logs

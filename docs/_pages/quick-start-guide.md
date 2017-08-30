@@ -34,8 +34,9 @@ it a name and the URL to a `leader` node:
 `csctl remote add <remote_name> <remote_url>`
 
 > This cluster will also need firewall rules for the Containership API open to the machine you are using the CLI from.
+See <https://docs.containership.io/access-control/firewalls/oss-firewall-guidelines> for more informatino on firewalls.
 
-> If it is a cluster created through the Containership cloud dashboard, the `cloud` plugin can assist you in setting up remotes.
+> If it is a cluster created through the Containership Cloud dashboard, the `cloud` plugin can assist you in setting up remotes.
 
 After you have created the remote, you can set it as your currently active remote with the following command:
 
@@ -48,8 +49,8 @@ use the other various commands to interact and view your cluster:
 
 ## Containership Cloud
 
-The above version works for both open-source clusters and those connected to the Containership cloud dashboard. If you are trying
-to configure the CLI to a cluster created with a Containership cloud account, the [cloud plugin]({{ site.baseurl }}/docs/plugins/cloud/overview)
+The above version works for both open-source clusters and those connected to the Containership Cloud dashboard. If you are trying
+to configure the CLI to a cluster created with a Containership Cloud account, the [cloud plugin]({{ site.baseurl }}/docs/plugins/cloud/overview)
 provides an easy way to interface with your organizations and clusters.
 
 First, ensure that the `cloud` plugin is installed for the command line client:

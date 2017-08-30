@@ -5,9 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-cluster-edit'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to edit details about your containership cloud cluster.
-</p>
+The `{{ page.command-name }}` command allows you to edit details about your containership cloud cluster.
 
 |------+----+------------+----+----------|
 | Argument | Alias | Description | Required | Default |

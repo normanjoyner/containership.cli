@@ -5,7 +5,7 @@ permalink: '/docs/plugins/cloud/cloud-cluster-show'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} allows you to view a details about the given containership cloud cluster
+The `{{ page.command-name }}` command allows you to view a details about the given containership cloud cluster
 
 > You must be viewing a cluster under your currently active organization.
 See [cloud org use]({{ site.baseurl }}/docs/plugins/cloud/cloud-org-use)

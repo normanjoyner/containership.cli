@@ -5,10 +5,8 @@ permalink: '/docs/commands/host-show'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view a details about a specific
+The `{{ page.command-name }}` command allows you to view a details about a specific
 host running on your cluster.
-</p>
 
 ~~~
 csctl host show 0130a049-4d15-46fc-96a5-85e1cb29212c

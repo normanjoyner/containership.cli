@@ -5,10 +5,8 @@ permalink: '/docs/plugins/cloud/overview'
 
 <h2> Overview </h2>
 
-<p>
-The {{ page.command-name }} plugin provides additional functionality for interacting with accounts, organizations, and clusters
+The `{{ page.command-name }}` plugin provides additional functionality for interacting with accounts, organizations, and clusters
 created through the containership cloud dashboard.
-</p>
 
 <h2> Commands </h2>
 

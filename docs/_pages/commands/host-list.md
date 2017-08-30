@@ -5,10 +5,8 @@ permalink: '/docs/commands/host-list'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view a list of all the hosts running on your cluster with
+The `{{ page.command-name }}` command allows you to view a list of all the hosts running on your cluster with
 some basic metadata about each host displayed.
-</p>
 
 ~~~
 csctl host list

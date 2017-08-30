@@ -5,11 +5,9 @@ permalink: '/docs/commands/svc-delete'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to remove an service from your cluster.
-</p>
+The `{{ page.command-name }}` command allows you to remove a service from your cluster.
 
-> If this is a Containership cloud cluster, it must not be `locked`
+> If this is a Containership Cloud cluster, it must not be `locked`
 
 ~~~
 csctl svc delete sampleredis

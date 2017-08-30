@@ -5,10 +5,10 @@ permalink: '/docs/commands/client-plugin-search'
 
 <h2> {{ page.command-name }} </h2>
 
-The {{ page.command-name }} command allows you to search for official containership plugins from the metadata registry.
+The `{{ page.command-name }}` command allows you to search for official containership plugins from the metadata registry.
 
 ~~~
-./bin/cli.js client-plugin search
+csctl client-plugin search
 
 ┌───────────────────┬────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ NAME              │ SOURCE                                 │ DESCRIPTION                                                                                        │

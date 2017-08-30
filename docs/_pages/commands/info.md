@@ -5,9 +5,7 @@ permalink: '/docs/commands/info'
 
 <h2> {{ page.command-name }} </h2>
 
-<p>
-The {{ page.command-name }} allows you to view high level information about your cluster.
-</p>
+The `{{ page.command-name }}` command allows you to view high level information about your cluster.
 
 ~~~
 csctl info
@@ -17,7 +15,7 @@ csctl info
 ├─────────────────────────────┼──────────────────────────────────────┤
 │ MEMORY (USED / TOTAL)       │ 544 MB / 1901 MB                     │
 ├─────────────────────────────┼──────────────────────────────────────┤
-│ APPLICATIONS                │ containership-logs                   │
+│ SERVICES                    │ containership-logs                   │
 │                             │ containership-prometheus             │
 │                             │ containership-prometheus-agents      │
 │                             │ ntpd                                 │
