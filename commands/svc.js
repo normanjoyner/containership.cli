@@ -197,6 +197,7 @@ module.exports.commands.push({
     callback: (argv) => {
         let options = _.omit(argv, ['h', 'help', '$0', '_']);
         options = parse_update_body(options);
+        options.id = argv.service_name;
 
         return request.post(`applications/${argv.service_name}`, {}, options, (err, response) => {
             if(err) {
