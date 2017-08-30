@@ -86,10 +86,10 @@ Commands:
   info           Show info about current active cluster.
   remote         Commands for manipulating remotes pointing to Containership
                  clusters.
-  cloud          Containership cloud management client.
+  cloud          Containership Cloud management client.
 ~~~
 
-You can then login to your cloud account via:
+You can then login to your Containership Cloud account via:
 
 `csctl cloud account login`
 
@@ -127,7 +127,7 @@ Similar to the `org use` command, you can set the active cluster with:
 
 `csctl cloud cluster use <cluster_id>`
 
-Once set, it will have automatically created a `remote` for you authenticated with your Containership cloud account.
+Once set, it will have automatically created a `remote` for you authenticated with your Containership Cloud account.
 
 ~~~
 csctl remote list

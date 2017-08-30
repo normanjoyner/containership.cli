@@ -16,5 +16,5 @@ The `{{ page.command-name }}` command allows you to add a CLI remote pointing to
 | remote_url | | URL of one of the `leader` nodes on your cluster | y | |
 |=================+============+=================+================+===|
 
-> This cluster will also need firewall rules for the containership api open to the machine you are using the CLI from.
+> This cluster will also need firewall rules for the Containership API open to the machine you are using the CLI from.
 See <https://docs.containership.io/access-control/firewalls/oss-firewall-guidelines> for more information.

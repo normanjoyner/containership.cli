@@ -48,7 +48,7 @@ module.exports = {
             const headers = [
                 'CPUS (USED / TOTAL)',
                 'MEMORY (USED / TOTAL)',
-                'APPLICATIONS',
+                'SERVICES',
                 'CONTAINERS (LOADED / TOTAL)',
                 'HOSTS'
             ];

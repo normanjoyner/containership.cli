@@ -16,7 +16,7 @@ const service_options = {
         alias: 'x'
     },
     image: {
-        description: 'Application image',
+        description: 'Service image',
         alias: 'i'
     },
     'env-var': {
@@ -25,7 +25,7 @@ const service_options = {
         alias: 'e'
     },
     'network-mode': {
-        description: 'Application network mode',
+        description: 'Service network mode',
         alias: 'n'
     },
     'container-port': {
@@ -33,7 +33,7 @@ const service_options = {
         alias: 'p'
     },
     command: {
-        description: 'Application start command',
+        description: 'Service start command',
         alias: 's'
     },
     volume: {

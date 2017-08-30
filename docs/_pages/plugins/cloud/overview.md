@@ -16,7 +16,7 @@ created through the containership cloud dashboard.
         <ul>
         {% for link in item.children %}
             {% if link.title contains page.command-name and link.title != "Overview" %}
-                <li><a href="{{link.url}}">{{link.title}}</a></li>
+                <li><a href="{{site.baseurl}}{{link.url}}">{{link.title}}</a></li>
             {% endif %}
         {% endfor %}
         </ul>

@@ -61,7 +61,7 @@ module.exports.commands.push({
 
             const headers = [
                 'CONTAINER_ID',
-                'APPLICATION',
+                'SERVICE',
                 'HOST',
                 'START_TIME',
                 'STATUS'
@@ -105,7 +105,7 @@ module.exports.commands.push({
 
             const headers = [
                 'CONTAINER_ID',
-                'APPLICATION',
+                'SERVICE',
                 'HOST',
                 'START_TIME',
                 'STATUS',

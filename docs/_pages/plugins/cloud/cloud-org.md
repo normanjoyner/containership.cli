@@ -15,7 +15,7 @@ The `{{ page.command-name }}` command allows you to display and configure your c
         <ul>
         {% for link in item.children %}
             {% if link.title contains page.command-name and link.title != page.command-name %}
-                <li><a href="{{link.url}}">{{link.title}}</a></li>
+                <li><a href="{{site.baseurl}}{{link.url}}">{{link.title}}</a></li>
             {% endif %}
         {% endfor %}
         </ul>
