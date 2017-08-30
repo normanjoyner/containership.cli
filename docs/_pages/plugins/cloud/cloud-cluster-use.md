@@ -15,6 +15,6 @@ The {{ page.command-name }} allows you to set the given cluster as the active cl
 
 Once you have an active cluster, you can use all of the standard client commands to interact with your cluster.
 
-Example of listing applications:
+Example of listing services:
 
-`csctl app list`
+`csctl svc list`

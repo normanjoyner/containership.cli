@@ -26,7 +26,7 @@ csctl container list
 └──────────────────────────────────────┴─────────────────────────────────┴──────────────────────────────────────┴─────────────────────────────────────────┴────────┘
 ~~~
 
-You can also filter the returned containers via either `service` or `host` with the `--app` and `--host` flags respectively:
+You can also filter the returned containers via either `service` or `host` with the `--svc` and `--host` flags respectively:
 
 ~~~
 csctl container list --svc containership-logs

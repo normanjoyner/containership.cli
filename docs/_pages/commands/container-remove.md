@@ -9,7 +9,7 @@ permalink: '/docs/commands/container-remove'
 The {{ page.command-name }} allows you to remove a container from a service.
 </p>
 
-> Note: this is only applicable to the `containership` orchestrator. If you are running a `k8s`
+> Note: this is only services to the `containership` orchestrator. If you are running a `k8s`
 cluster, this command is not supported. You can use `svc scale-down` to remove containers.
 
 ~~~

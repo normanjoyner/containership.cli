@@ -10,7 +10,7 @@ const chalk = require('chalk');
 const flatten = require('flat');
 const unflatten = flatten.unflatten;
 
-const application_options = {
+const service_options = {
     engine: {
         description: 'Engine used to start service',
         alias: 'x'
@@ -90,8 +90,8 @@ module.exports.commands.push({
             ];
 
             const data = Object.keys(response.body).map(key => {
-                const app = response.body[key];
-                const loaded_containers = app.containers.reduce((accumulator, container) => {
+                const service = response.body[key];
+                const loaded_containers = service.containers.reduce((accumulator, container) => {
                     if(container.status === 'loaded') {
                         accumulator++;
                     }
@@ -100,12 +100,12 @@ module.exports.commands.push({
                 }, 0);
 
                 return [
-                    app.id,
-                    app.image,
-                    app.command,
-                    app.cpus,
-                    app.memory,
-                    `${loaded_containers || 0}/${app.containers.length}`
+                    service.id,
+                    service.image,
+                    service.command,
+                    service.cpus,
+                    service.memory,
+                    `${loaded_containers || 0}/${service.containers.length}`
                 ];
             });
 
@@ -132,7 +132,7 @@ module.exports.commands.push({
                 return logger.error(`Application ${argv.service_name} was not found!`);
             }
 
-            const app = response.body;
+            const service = response.body;
 
             const headers = [
                 'IMAGE',
@@ -150,11 +150,11 @@ module.exports.commands.push({
                 'TAGS'
             ];
 
-            const env_vars = _.map(app.env_vars, (v, k) => {
+            const env_vars = _.map(service.env_vars, (v, k) => {
                 return `${chalk.gray(k)}: ${v}`;
             });
 
-            const volumes = _.map(app.volumes, (vol) => {
+            const volumes = _.map(service.volumes, (vol) => {
                 let def = `${vol.host ? vol.host : chalk.gray('%CS_MANAGED%')}:${vol.container}`;
 
                 if(vol.propogation) {
@@ -164,21 +164,21 @@ module.exports.commands.push({
                 return def;
             });
 
-            const tags = _.map(flatten(app.tags), (v, k) => {
+            const tags = _.map(flatten(service.tags), (v, k) => {
                 return `${chalk.gray(k)}: ${v}`;
             });
 
             const data = [
-                app.image,
-                app.discovery_port,
-                app.command,
-                app.engine,
-                app.network_mode,
-                app.container_port,
-                app.cpus,
-                app.memory,
-                app.respawn,
-                app.privileged,
+                service.image,
+                service.discovery_port,
+                service.command,
+                service.engine,
+                service.network_mode,
+                service.container_port,
+                service.cpus,
+                service.memory,
+                service.respawn,
+                service.privileged,
                 env_vars.join('\n'),
                 volumes.join('\n'),
                 tags.join('\n')
@@ -193,7 +193,7 @@ module.exports.commands.push({
 module.exports.commands.push({
     name: 'create <service_name>',
     description: 'Create service.',
-    options: application_options,
+    options: service_options,
     callback: (argv) => {
         let options = _.omit(argv, ['h', 'help', '$0', '_']);
         options = parse_update_body(options);
@@ -215,7 +215,7 @@ module.exports.commands.push({
 module.exports.commands.push({
     name: 'edit <service_name>',
     description: 'Edit service.',
-    options: application_options,
+    options: service_options,
     callback: (argv) => {
         let options = _.omit(argv, ['h', 'help', '$0', '_']);
         options = parse_update_body(options);
@@ -229,39 +229,39 @@ module.exports.commands.push({
                 return logger.error(`Application ${argv.service_name} was not found!`);
             }
 
-            const app = response.body;
+            const service = response.body;
 
             // environment variables
-            app.env_vars = flatten(app.env_vars);
+            service.env_vars = flatten(service.env_vars);
             const to_remove_env = _.keys(flatten(_.pickBy(options.env_vars, val => val !== false && !val)));
             to_remove_env.forEach((key) => {
-                delete app.env_vars[key];
+                delete service.env_vars[key];
             });
             const to_add_env = flatten(_.pickBy(options.env_vars, val => val));
-            options.env_vars = unflatten(_.merge(app.env_vars, to_add_env));
+            options.env_vars = unflatten(_.merge(service.env_vars, to_add_env));
 
             // tags
-            app.tags = flatten(app.tags);
+            service.tags = flatten(service.tags);
             const to_remove_tag = _.keys(flatten(_.pickBy(options.tags, val => val !== false && !val)));
             to_remove_tag.forEach((key) => {
-                delete app.tags[key];
+                delete service.tags[key];
             });
             const to_add_tag = flatten(_.pickBy(options.tags, val => val));
-            options.tags = unflatten(_.merge(app.tags, to_add_tag));
+            options.tags = unflatten(_.merge(service.tags, to_add_tag));
 
             // volumes
             _.forEach(options.volumes, (vol) => {
-                const existing = _.find(app.volumes, { container: vol.container });
+                const existing = _.find(service.volumes, { container: vol.container });
 
                 if(existing) {
                     existing.host = vol.host;
                     existing.container = vol.container;
                     existing.propogation = vol.propogation;
                 } else {
-                    app.volumes.push(vol);
+                    service.volumes.push(vol);
                 }
             });
-            options.volumes = app.volumes;
+            options.volumes = service.volumes;
 
             return request.put(`applications/${argv.service_name}`, {}, options, (err, response) => {
                 if(err) {

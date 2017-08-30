@@ -14,7 +14,7 @@ a help manual to describe the various commands and arguments:
 
 ~~~
 Commands:
-  app            List and manipulate applications running on the cluster
+  svc            List and manipulate services running on the cluster
                  specified by the client remote.
   client-plugin  List and manipulate plugins for Containership client.
   container      List and manipulate containers running on the configured
@@ -44,7 +44,7 @@ After you have created the remote, you can set it as your currently active remot
 At this point you should have a properly configured remote pointing to one of your Containership clusters. You can then
 use the other various commands to interact and view your cluster:
 
-`csctl app list`
+`csctl svc list`
 
 ## Containership Cloud
 
@@ -75,7 +75,7 @@ Once installed, you should see an additional top-level command line client comma
 csctl --help
 
 Commands:
-  app            List and manipulate applications running on the cluster
+  svc            List and manipulate services running on the cluster
                  specified by the client remote.
   client-plugin  List and manipulate plugins for Containership client.
   container      List and manipulate containers running on the configured
@@ -139,4 +139,4 @@ csctl remote list
 └────────────────────────────────────────┴─────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ~~~
 
-You can then interact with the cluster using the standard commands such as `app`, `host`, etc.
+You can then interact with the cluster using the standard commands such as `svc`, `host`, etc.

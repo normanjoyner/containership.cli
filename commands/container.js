@@ -17,10 +17,10 @@ module.exports.commands.push({
     name: 'list',
     description: 'List containers on the configured cluster.',
     options: {
-        app: {
-            description: 'Name of the application running containers.',
+        service: {
+            description: 'Name of the service running containers.',
             type: 'array',
-            alias: ['a', 'application'],
+            alias: ['s', 'services'],
             default: []
         },
         host: {
@@ -36,25 +36,24 @@ module.exports.commands.push({
                 return logger.error('Could not fetch containers!');
             }
 
-            const app_names = argv.app;
-            logger.info(app_names);
+            const service_names = argv.service;
 
-            if(app_names.length) {
+            if(service_names.length) {
                 let oneExists = false;
 
                 const tmp = {};
 
-                _.forEach(app_names, (app_name) => {
-                    if(!response.body[app_name]) {
+                _.forEach(service_names, (service_name) => {
+                    if(!response.body[service_name]) {
                         return;
                     }
 
                     oneExists = true;
-                    tmp[app_name] = response.body[app_name];
+                    tmp[service_name] = response.body[service_name];
                 });
 
                 if(!oneExists) {
-                    return logger.error(`None of the '${app_names.toString()}' applications exist on the cluster, could not retrieve containers!`);
+                    return logger.error(`None of the '${service_names.toString()}' services exist on the cluster, could not retrieve containers!`);
                 }
 
                 response.body = tmp;
@@ -69,8 +68,8 @@ module.exports.commands.push({
             ];
 
             const data = _.chain(response.body)
-                .map((app, name) => {
-                    return app.containers
+                .map((service, name) => {
+                    return service.containers
                         .filter(container => argv.host.length === 0 || argv.host.indexOf(container.host) !== -1)
                         .map((container) => {
                             return [
@@ -86,7 +85,7 @@ module.exports.commands.push({
                 .value();
 
             if(data.length === 0) {
-                return logger.error('No containers exist on the cluster given your host and application filters.');
+                return logger.error('No containers exist on the cluster given your host and service filters.');
             }
 
             const output = Table.createTable(headers, data);
@@ -119,9 +118,9 @@ module.exports.commands.push({
             ];
 
             const containers = _.chain(response.body)
-                .map(app => {
-                    return _.map(app.containers, (container) => {
-                        container.application_name = app.id;
+                .map(service => {
+                    return _.map(service.containers, (container) => {
+                        container.service_name = service.id;
                         return container;
                     });
                 })
@@ -138,7 +137,7 @@ module.exports.commands.push({
 
             const data = [
                 container.id,
-                container.application_name,
+                container.service_name,
                 container.host,
                 new Date(container.start_time).toString(),
                 container.status,
@@ -156,10 +155,10 @@ module.exports.commands.push({
     }
 });
 
-function pipeLogs(app_name, container_id, type, out) {
+function pipeLogs(service_name, container_id, type, out) {
     let ping_active = false;
 
-    return request.get(`logs/applications/${app_name}/containers/${container_id}?type=${type}`)
+    return request.get(`logs/applications/${service_name}/containers/${container_id}?type=${type}`)
         .pipe(through2(function(chunk, enc, cb) {
             chunk = chunk.toString();
 
@@ -208,25 +207,25 @@ module.exports.commands.push({
                 return logger.error('Could not fetch containers!');
             }
 
-            let app_name = null;
+            let service_name = null;
 
-            _.forEach(response.body, (app, name) => {
-                if(_.find(app.containers, { id: argv.container_id })) {
-                    app_name = name;
+            _.forEach(response.body, (service, name) => {
+                if(_.find(service.containers, { id: argv.container_id })) {
+                    service_name = name;
                     return false;
                 }
             });
 
-            if(!app_name) {
+            if(!service_name) {
                 return logger.error(`Could not find container ${argv.container_id} to stream logs from`);
             }
 
             if(argv.type === 'stdout' || argv.type === 'all') {
-                pipeLogs(app_name, argv.container_id, 'stdout', process.stdout);
+                pipeLogs(service_name, argv.container_id, 'stdout', process.stdout);
             }
 
             if(argv.type === 'stderr' || argv.type === 'all') {
-                pipeLogs(app_name, argv.container_id, 'stderr', process.stderr);
+                pipeLogs(service_name, argv.container_id, 'stderr', process.stderr);
             }
         });
     }
@@ -241,29 +240,29 @@ module.exports.commands.push({
                 return logger.error('Could not fetch containers!');
             }
 
-            let app_name = null;
+            let service_name = null;
 
-            _.forEach(response.body, (app, name) => {
-                if(_.find(app.containers, { id: argv.container_id })) {
-                    app_name = name;
+            _.forEach(response.body, (service, name) => {
+                if(_.find(service.containers, { id: argv.container_id })) {
+                    service_name = name;
                     return false;
                 }
             });
 
-            if(!app_name) {
+            if(!service_name) {
                 return logger.error(`Could not find container ${argv.container_id} to remove!`);
             }
 
-            return request.delete(`applications/${app_name}/containers/${argv.container_id}`, {}, (err, response) => {
+            return request.delete(`applications/${service_name}/containers/${argv.container_id}`, {}, (err, response) => {
                 if(err) {
                     return logger.error('Could not fetch containers!');
                 }
 
                 if(!response.statusCode === 204) {
-                    return logger.error(`Failed to remove container ${argv.container_id} from application ${app_name}!`);
+                    return logger.error(`Failed to remove container ${argv.container_id} from service ${service_name}!`);
                 }
 
-                return logger.info(`Successfully removed container ${argv.container_id} from application ${app_name}!`);
+                return logger.info(`Successfully removed container ${argv.container_id} from service ${service_name}!`);
             });
         });
     }

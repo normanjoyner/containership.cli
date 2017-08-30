@@ -19,9 +19,9 @@ module.exports = {
 
             const host_names = _.keys(cluster.hosts).join('\n');
             const hosts = _.map(cluster.hosts, host => host);
-            const app_names = _.keys(cluster.applications).join('\n');
-            const containers = _.flatten(_.map(cluster.applications, (app) => {
-                return app.containers;
+            const service_names = _.keys(cluster.applications).join('\n');
+            const containers = _.flatten(_.map(cluster.applications, (service) => {
+                return service.containers;
             }));
             const loaded = _.reduce(containers, (acc, container) => {
                 return acc + (container.status === 'loaded' ? 1 : 0);
@@ -58,7 +58,7 @@ module.exports = {
             const data = [
                 `${used_resources.cpus.toFixed(2)} / ${total_resources.cpus.toFixed(2)}`,
                 `${used_resources.memory} MB / ${total_resources.memory} MB`,
-                app_names,
+                service_names,
                 `${loaded} / ${containers.length}`,
                 host_names
             ];
