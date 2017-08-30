@@ -18,7 +18,7 @@ You can then run any of the commands while mounting in your `.containership` con
 
 `docker run -v $HOME/.containership:/root/.containership -it containership/containership.cli --help`
 
-We recommend you alias this command to either `cs` or `csctl` for ease of execuation. You can place the following
+We recommend you alias this command to either `cs` or `csctl` for ease of execution. You can place the following
 line in your shell configuration file (e.g. `~/.bashrc`, `~/.bash_profile`, `~/.zshrc`, etc.):
 
 ~~~
@@ -37,7 +37,7 @@ Then you can execute the CLI with either of the following two commands:
 
 ## From Source
 
-You can also clone the repo locally and manually install and run the client from source:
+You can also clone the repository locally and manually install and run the client from source:
 
 ~~~bash
 git clone https://github.com/containership/containership.cli

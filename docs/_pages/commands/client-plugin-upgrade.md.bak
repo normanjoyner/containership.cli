@@ -25,6 +25,6 @@ Example upgrading the `cloud` plugin:
 ~~~
 ./bin/cli.js client-plugin upgrade github://containership/containership.plugin.cloud
 
-upgraded 325 packages in 35.971s
-Successfully upgraded all plugins!
+upgradeed 325 packages in 35.971s
+Succesfully upgraded all plugins!
 ~~~

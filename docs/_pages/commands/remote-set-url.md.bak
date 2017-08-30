@@ -16,4 +16,4 @@ The {{ page.command-name }} command allows you to update the url for an existing
 | remote_url | | URL of one of the `leader` nodes on your cluster | y | |
 |=================+============+=================+================+===|
 
-> This cluster will also need firewall rules for the containership API open to the machine you are using the CLI from.
+> This cluster will also need firewall rules for the containership api open to the machine you are using the CLI from.

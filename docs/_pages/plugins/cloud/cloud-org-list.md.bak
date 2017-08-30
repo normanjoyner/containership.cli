@@ -19,4 +19,4 @@ csctl cloud org list
 └──────────────────────────────────────┴───────────────────────────┘
 ~~~
 
-> Note: the currently active organization for the client is denoted by the `*` symbol next to the name
+> Note: the currently active organization for the client is denoted by the `*` symbole next to the name

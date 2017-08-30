@@ -26,5 +26,5 @@ Example adding the `cloud` plugin:
 ./bin/cli.js client-plugin add github://containership/containership.plugin.cloud
 
 added 325 packages in 35.971s
-Successfully upgraded all plugins!
+Succesfully upgraded all plugins!
 ~~~

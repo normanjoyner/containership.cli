@@ -15,5 +15,5 @@ cluster, this command is not supported. You can use `svc scale-down` to remove c
 ~~~
 csctl container remove <container_id>
 
-Successfully removed container!
+Succesfully removed container!
 ~~~
