@@ -7,6 +7,7 @@ const utils = require('../lib/utils');
 
 const _ = require('lodash');
 const chalk = require('chalk');
+const Converter = require('@containership/containership.schema-converter');
 const flatten = require('flat');
 const unflatten = flatten.unflatten;
 
@@ -186,6 +187,46 @@ module.exports.commands.push({
 
             const output = Table.createVerticalTable(headers, [data]);
             return logger.info(output);
+        });
+    }
+});
+
+module.exports.commands.push({
+    name: 'create-from-file',
+    description: 'Create service from file.',
+    options: {
+        file: {
+            array: true,
+            required: true,
+            description: 'One or more files with service configurations.',
+            alias: 'f'
+        },
+        type: {
+            required: true,
+            description: 'Type of configuration. (docker, containership, kubernetes)',
+            alias: 't'
+        }
+    },
+    callback: (argv) => {
+        const config = Converter.get_service_representation(argv.file, {
+            configuration_service: argv.type.toLowerCase(),
+            configuration_type: 'file'
+        });
+
+        const result = config.convertTo(Converter.services.CONTAINERSHIP);
+
+        console.log(JSON.stringify(result,null,2));
+
+        return request.post('applications', {}, result.configuration, (err, response) => {
+            if(err) {
+                return logger.error(`Could not create service ${_.keys(result.configuration)}!`);
+            }
+
+            if(response.statusCode !== 200) {
+                return logger.error(response.body.error);
+            }
+
+            return logger.info(`Successfully created services ${_.keys(result.configuration)}!`);
         });
     }
 });
