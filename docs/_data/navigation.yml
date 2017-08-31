@@ -17,6 +17,8 @@ docs:
         url: /docs/commands/svc
       - title: "svc create"
         url: /docs/commands/svc-create
+      - title: "svc create-from-file"
+        url: /docs/commands/svc-create-from-file
       - title: "svc delete"
         url: /docs/commands/svc-delete
       - title: "svc edit"

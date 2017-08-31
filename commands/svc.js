@@ -6,6 +6,7 @@ const Table = require('../lib/table');
 const utils = require('../lib/utils');
 
 const _ = require('lodash');
+const async = require('async');
 const chalk = require('chalk');
 const Converter = require('@containership/containership.schema-converter');
 const flatten = require('flat');
@@ -92,6 +93,7 @@ module.exports.commands.push({
 
             const data = Object.keys(response.body).map(key => {
                 const service = response.body[key];
+
                 const loaded_containers = service.containers.reduce((accumulator, container) => {
                     if(container.status === 'loaded') {
                         accumulator++;
@@ -204,29 +206,79 @@ module.exports.commands.push({
         type: {
             required: true,
             description: 'Type of configuration. (docker, containership, kubernetes)',
+            choices: ['docker', 'containership', 'kubernetes'],
             alias: 't'
         }
     },
     callback: (argv) => {
-        const config = Converter.get_service_representation(argv.file, {
+        const config = Converter.getConverter(argv.file, {
             configuration_service: argv.type.toLowerCase(),
             configuration_type: 'file'
         });
 
-        const result = config.convertTo(Converter.services.CONTAINERSHIP);
 
-        console.log(JSON.stringify(result,null,2));
+        return async.waterfall([
+            (cb) => {
+                let result;
+                try {
+                    result = config.convertTo(Converter.services.CONTAINERSHIP);
+                } catch(conversionError) {
+                    return cb(conversionError);
+                }
 
-        return request.post('applications', {}, result.configuration, (err, response) => {
+                let foundError = false;
+
+                // if there were any parsing errors, warn about them
+                _.forEach(result.errors, (errorList, app) => {
+                    if(errorList.length > 0) {
+                        foundError = true;
+                        logger.warn(`Service ${app} encountered the following errors during parsing:`);
+                        logger.warn(`\t${errorList.join('\n\t')}`);
+                    }
+                });
+
+                return cb(null, result, foundError);
+            },
+            (conversionResult, foundError, cb) => {
+                if(!foundError) {
+                    return setImmediate(() => {
+                        return cb(null, conversionResult, true);
+                    });
+                }
+
+                return utils.yesno({
+                    message: 'The above errors were encounters while converting, do you still want to create the services?'
+                }, (err, shouldCreate) => {
+                    if(err) {
+                        return cb(err);
+                    }
+
+                    return cb(null, conversionResult, shouldCreate);
+                });
+            },
+            (result, shouldCreate, cb) => {
+                if(!shouldCreate) {
+                    return cb('Not creating services due to errors during conversion...');
+                }
+
+                return request.post('applications', {}, result.configuration, (err, response) => {
+                    if(err) {
+                        return cb(`Could not create service ${_.keys(result.configuration)}!`);
+                    }
+
+                    if(response.statusCode !== 201) {
+                        return cb(response.body.error);
+                    }
+
+                    return cb(null, `Successfully created services ${_.keys(result.configuration)}!`);
+                });
+            }
+        ], (err, res) => {
             if(err) {
-                return logger.error(`Could not create service ${_.keys(result.configuration)}!`);
+                return logger.error(err);
             }
 
-            if(response.statusCode !== 200) {
-                return logger.error(response.body.error);
-            }
-
-            return logger.info(`Successfully created services ${_.keys(result.configuration)}!`);
+            logger.info(res);
         });
     }
 });
