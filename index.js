@@ -7,6 +7,8 @@ const _ = require('lodash');
 const fs = require('fs');
 const yargs = require('yargs');
 
+const MAX_SUBCOMMAND_DEPTH = 5;
+
 class ContainershipCli {
     constructor(options) {
         this.options = options || {};
@@ -71,7 +73,11 @@ class ContainershipCli {
         return yargs.showHelp('log');
     }
 
-    parseCommand(yargs, def) {
+    parseCommand(yargs, def, depth = 0) {
+        if(++depth > MAX_SUBCOMMAND_DEPTH) {
+            throw new Error('Max subcommand depth has been exceeded!');
+        }
+
         // has sub-commands defined
         if(def.commands) {
             yargs.command({
@@ -82,14 +88,14 @@ class ContainershipCli {
 
                     _.forEach(def.commands, (cmd) => {
                         hasDefault = hasDefault || cmd === '*';
-                        return this.parseCommand(yargs, cmd);
+                        return this.parseCommand(yargs, cmd, depth);
                     });
 
                     if(!hasDefault) {
                         yargs.command('*', '', {}, () => {
                             _.forEach(_.sortBy(def.commands, cmd => cmd.name), cmd => {
                                 hasDefault = hasDefault || cmd === '*';
-                                return this.parseCommand(yargs, cmd);
+                                return this.parseCommand(yargs, cmd, depth);
                             });
 
                             return yargs.showHelp('log');
