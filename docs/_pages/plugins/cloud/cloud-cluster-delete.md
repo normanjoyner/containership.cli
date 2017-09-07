@@ -7,10 +7,16 @@ permalink: '/docs/plugins/cloud/cloud-cluster-delete'
 
 The `{{ page.command-name }}` command allows you to delete a containership cluster and all VMs associated with it.
 
-> Note: This will not prompt you for confirmation, this is a destructive command and should be used with care!
+|------+----+------------+----|
+| Argument | Alias | Description | Required |
+|-----------------|------|-----------|----------------|
+| force | f | Force deletion, without confirmation prompt | n |
+|=================+============+=================+================|
+
+> Note: This is a destructive command and should be used with care! This will prompt for confirmation, in the absense of a `force` flag.
 
 ~~~
-csctl cloud cluster delete <cluster_id>
+csctl cloud cluster delete <cluster_id> [--force]
 
 Successfully deleted cluster!
 ~~~
