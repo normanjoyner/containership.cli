@@ -13,7 +13,7 @@ The `{{ page.command-name }}` command allows you to delete a containership clust
 | force | f | Force deletion, without confirmation prompt | n |
 |=================+============+=================+================|
 
-> Note: This is a destructive command and should be used with care! This will prompt for confirmation, in the absense of a `force` flag.
+> Note: This is a destructive command and should be used with care! This will prompt for confirmation, in the absence of a `force` flag.
 
 ~~~
 csctl cloud cluster delete <cluster_id> [--force]
