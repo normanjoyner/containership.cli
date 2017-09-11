@@ -348,6 +348,7 @@ module.exports.commands.push({
                 return logger.error(err);
             }
 
+            sync(true);
             return logger.info('Succesfully added all plugins!');
         });
     }
@@ -362,6 +363,7 @@ module.exports.commands.push({
                 return logger.error(err);
             }
 
+            sync(true);
             return logger.info('Succesfully upgraded all plugins!');
         });
     }
