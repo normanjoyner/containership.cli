@@ -78,7 +78,7 @@ module.exports.commands.push({
     description: 'List services on the cluster.',
     callback: () => {
         return request.get('applications', {}, (err, response) => {
-            if(err) {
+            if(err || response.body.message === 'Not found.') {
                 return logger.error('Could not fetch services!');
             }
 

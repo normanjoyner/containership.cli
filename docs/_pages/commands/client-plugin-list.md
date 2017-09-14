@@ -13,7 +13,7 @@ csctl client-plugin list
 ┌────────────────────────────┬─────────┬──────────────────────────────────────────────────┬──────────────────────────────────────────────────┐
 │ NAME                       │ VERSION │ DESCRIPTION                                      │ PATH                                             │
 ├────────────────────────────┼─────────┼──────────────────────────────────────────────────┼──────────────────────────────────────────────────┤
-│ containership.plugin.cloud │ 0.14.0  │ Containership Cloud management client.           │ /Users/nick/.containership/plugins/containership │
+│ containership.plugin.cloud │ 0.14.0  │ Containership Cloud management client.           │ /Users/root/.containership/plugins/containership │
 │                            │         │                                                  │ .plugin.cloud                                    │
 └────────────────────────────┴─────────┴──────────────────────────────────────────────────┴──────────────────────────────────────────────────┘
 ~~~

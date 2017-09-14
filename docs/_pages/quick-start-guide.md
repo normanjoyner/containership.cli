@@ -65,7 +65,7 @@ csctl client-plugin list
 ┌────────────────────────────┬─────────┬──────────────────────────────────────────────────┬──────────────────────────────────────────────────┐
 │ NAME                       │ VERSION │ DESCRIPTION                                      │ PATH                                             │
 ├────────────────────────────┼─────────┼──────────────────────────────────────────────────┼──────────────────────────────────────────────────┤
-│ containership.plugin.cloud │ 0.14.0  │ Containership cloud management client.           │ /Users/nick/.containership/plugins/containership │
+│ containership.plugin.cloud │ 0.14.0  │ Containership cloud management client.           │ /Users/root/.containership/plugins/containership │
 │                            │         │                                                  │ .plugin.cloud                                    │
 └────────────────────────────┴─────────┴──────────────────────────────────────────────────┴──────────────────────────────────────────────────┘
 ~~~
@@ -76,8 +76,6 @@ Once installed, you should see an additional top-level command line client comma
 csctl --help
 
 Commands:
-  svc            List and manipulate services running on the cluster
-                 specified by the client remote.
   client-plugin  List and manipulate plugins for Containership client.
   container      List and manipulate containers running on the configured
                  containership cluster.
@@ -86,7 +84,9 @@ Commands:
   info           Show info about current active cluster.
   remote         Commands for manipulating remotes pointing to Containership
                  clusters.
-  cloud          Containership Cloud management client.
+  svc            List and manipulate services running on the cluster specified
+                 by the client remote.
+  cloud          Containership cloud management client.
 ~~~
 
 You can then login to your Containership Cloud account via:

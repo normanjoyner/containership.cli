@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/containership/containership.cli",
   "dependencies": {
+    "@containership/containership.schema-converter": "^0.1.0",
     "async": "^2.4.1",
     "chalk": "^2.0.1",
     "cli-table2": "^0.2.0",
